@@ -1,19 +1,19 @@
 [
   {
-    "name": "__init__",
-    "full_name": "DataProcessor.__init__",
+    "name": "_error_result",
+    "full_name": "_error_result",
     "file": "app.py",
-    "start_line": 15,
-    "num_lines": 6,
+    "start_line": 12,
+    "num_lines": 3,
     "is_bad_smell": false,
-    "smell_probability": 0.05421708013192604,
+    "smell_probability": 6.953995184235778e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
       "deep_nesting": 0,
       "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
+      "no_docstring": 0,
+      "no_type_hints": 0,
       "long_lines": 0,
       "commented_code": 0,
       "poor_naming": 0
@@ -23,165 +23,13 @@
     "refactor_error": null
   },
   {
-    "name": "process",
-    "full_name": "DataProcessor.process",
+    "name": "_validate_username",
+    "full_name": "_validate_username",
     "file": "app.py",
-    "start_line": 22,
-    "num_lines": 38,
+    "start_line": 17,
+    "num_lines": 7,
     "is_bad_smell": false,
-    "smell_probability": 0.3520141480123364,
-    "smell_details": {
-      "long_method": 1,
-      "long_param_list": 0,
-      "deep_nesting": 0,
-      "magic_numbers": 1,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "calculate_and_validate_and_save_and_notify",
-    "full_name": "DataProcessor.calculate_and_validate_and_save_and_notify",
-    "file": "app.py",
-    "start_line": 62,
-    "num_lines": 59,
-    "is_bad_smell": false,
-    "smell_probability": 0.41729102486939107,
-    "smell_details": {
-      "long_method": 1,
-      "long_param_list": 0,
-      "deep_nesting": 1,
-      "magic_numbers": 1,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "process_data",
-    "full_name": "process_data",
-    "file": "app.py",
-    "start_line": 123,
-    "num_lines": 33,
-    "is_bad_smell": true,
-    "smell_probability": 0.5412541739103034,
-    "smell_details": {
-      "long_method": 1,
-      "long_param_list": 1,
-      "deep_nesting": 1,
-      "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 1,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 1.018024261618423,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 1.0169015352113102,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.4134808853094
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 1.015778808804198,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 1.0146560823970852,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973842811
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 1.0135333559899729,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
-  },
-  {
-    "name": "risky_operation",
-    "full_name": "risky_operation",
-    "file": "app.py",
-    "start_line": 158,
-    "num_lines": 9,
-    "is_bad_smell": false,
-    "smell_probability": 0.052558709581228276,
-    "smell_details": {
-      "long_method": 0,
-      "long_param_list": 0,
-      "deep_nesting": 0,
-      "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "build_string",
-    "full_name": "build_string",
-    "file": "app.py",
-    "start_line": 169,
-    "num_lines": 5,
-    "is_bad_smell": false,
-    "smell_probability": 0.11582250840032343,
-    "smell_details": {
-      "long_method": 0,
-      "long_param_list": 0,
-      "deep_nesting": 0,
-      "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "get_name",
-    "full_name": "get_name",
-    "file": "app.py",
-    "start_line": 180,
-    "num_lines": 2,
-    "is_bad_smell": false,
-    "smell_probability": 0.05876969354211448,
+    "smell_probability": 0.00022222350582851917,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -198,20 +46,20 @@
     "refactor_error": null
   },
   {
-    "name": "__init__",
-    "full_name": "User.__init__",
+    "name": "_validate_password",
+    "full_name": "_validate_password",
     "file": "app.py",
-    "start_line": 185,
-    "num_lines": 4,
+    "start_line": 26,
+    "num_lines": 11,
     "is_bad_smell": false,
-    "smell_probability": 0.056223719349694654,
+    "smell_probability": 0.02501113090703753,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
       "deep_nesting": 0,
       "magic_numbers": 0,
       "no_docstring": 1,
-      "no_type_hints": 1,
+      "no_type_hints": 0,
       "long_lines": 0,
       "commented_code": 0,
       "poor_naming": 0
@@ -221,20 +69,43 @@
     "refactor_error": null
   },
   {
-    "name": "increment_counter",
-    "full_name": "increment_counter",
+    "name": "_validate_personal_info",
+    "full_name": "_validate_personal_info",
     "file": "app.py",
-    "start_line": 200,
-    "num_lines": 4,
+    "start_line": 39,
+    "num_lines": 14,
     "is_bad_smell": false,
-    "smell_probability": 0.0048200326666866045,
+    "smell_probability": 0.01818350242682472,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
       "deep_nesting": 0,
       "magic_numbers": 0,
       "no_docstring": 1,
-      "no_type_hints": 1,
+      "no_type_hints": 0,
+      "long_lines": 1,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
+  },
+  {
+    "name": "_validate_preferences",
+    "full_name": "_validate_preferences",
+    "file": "app.py",
+    "start_line": 55,
+    "num_lines": 12,
+    "is_bad_smell": false,
+    "smell_probability": 0.012791570127498101,
+    "smell_details": {
+      "long_method": 0,
+      "long_param_list": 0,
+      "deep_nesting": 0,
+      "magic_numbers": 0,
+      "no_docstring": 1,
+      "no_type_hints": 0,
       "long_lines": 0,
       "commented_code": 0,
       "poor_naming": 0
@@ -244,20 +115,20 @@
     "refactor_error": null
   },
   {
-    "name": "dead_function",
-    "full_name": "dead_function",
+    "name": "_build_success_result",
+    "full_name": "_build_success_result",
     "file": "app.py",
-    "start_line": 211,
-    "num_lines": 3,
+    "start_line": 69,
+    "num_lines": 15,
     "is_bad_smell": false,
-    "smell_probability": 0.005620929565431023,
+    "smell_probability": 0.00038192624624215074,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
       "deep_nesting": 0,
       "magic_numbers": 0,
       "no_docstring": 1,
-      "no_type_hints": 1,
+      "no_type_hints": 0,
       "long_lines": 0,
       "commented_code": 0,
       "poor_naming": 0
@@ -267,73 +138,64 @@
     "refactor_error": null
   },
   {
-    "name": "inconsistent_return",
-    "full_name": "inconsistent_return",
+    "name": "process_new_user_registration_and_setup_account_profile",
+    "full_name": "process_new_user_registration_and_setup_account_profile",
     "file": "app.py",
-    "start_line": 216,
-    "num_lines": 5,
-    "is_bad_smell": false,
-    "smell_probability": 0.006946095410242143,
+    "start_line": 86,
+    "num_lines": 38,
+    "is_bad_smell": true,
+    "smell_probability": 0.5931285412121552,
     "smell_details": {
-      "long_method": 0,
+      "long_method": 1,
       "long_param_list": 0,
       "deep_nesting": 0,
       "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
+      "no_docstring": 0,
+      "no_type_hints": 0,
+      "long_lines": 1,
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "add_numbers",
-    "full_name": "add_numbers",
-    "file": "app.py",
-    "start_line": 236,
-    "num_lines": 3,
-    "is_bad_smell": false,
-    "smell_probability": 0.012437987604501845,
-    "smell_details": {
-      "long_method": 0,
-      "long_param_list": 0,
-      "deep_nesting": 0,
-      "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
-  },
-  {
-    "name": "lazy_import",
-    "full_name": "lazy_import",
-    "file": "app.py",
-    "start_line": 258,
-    "num_lines": 3,
-    "is_bad_smell": false,
-    "smell_probability": 0.0035681006904214347,
-    "smell_details": {
-      "long_method": 0,
-      "long_param_list": 0,
-      "deep_nesting": 0,
-      "magic_numbers": 0,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
-      "commented_code": 0,
-      "poor_naming": 0
-    },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 3.0222284704065494,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 3.021105743999437,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 3.0199830175923243,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 3.018860291185212,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.548289738433056
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 3.0177375647780993,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "green",
@@ -342,7 +204,7 @@
     "start_line": 47,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06492554826076258,
+    "smell_probability": 1.7494870801010756e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -365,7 +227,7 @@
     "start_line": 51,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06667364064892982,
+    "smell_probability": 1.7986726117580895e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -388,7 +250,7 @@
     "start_line": 55,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06145000428690685,
+    "smell_probability": 1.6669904628199545e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -411,7 +273,7 @@
     "start_line": 59,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06318336735872902,
+    "smell_probability": 1.7056964587285816e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -434,7 +296,7 @@
     "start_line": 63,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.061952273232641165,
+    "smell_probability": 1.6524677912559455e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -457,7 +319,7 @@
     "start_line": 67,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06011550576179471,
+    "smell_probability": 1.6181549088765222e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -479,8 +341,8 @@
     "file": "cli.py",
     "start_line": 71,
     "num_lines": 31,
-    "is_bad_smell": true,
-    "smell_probability": 0.7714139708283027,
+    "is_bad_smell": false,
+    "smell_probability": 0.08062498906770962,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -492,46 +354,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 2.0008840889407953,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 1.9997613625336828,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.41348088531187
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 1.9986386361265702,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 1.9975159097194577,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973843059
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 1.9963931833123452,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "print_smell_details",
@@ -540,7 +365,7 @@
     "start_line": 104,
     "num_lines": 22,
     "is_bad_smell": false,
-    "smell_probability": 0.4602934690022569,
+    "smell_probability": 0.024898976598842496,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -563,7 +388,7 @@
     "start_line": 128,
     "num_lines": 5,
     "is_bad_smell": false,
-    "smell_probability": 0.06814836275472268,
+    "smell_probability": 0.0007186303977471983,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -586,7 +411,7 @@
     "start_line": 135,
     "num_lines": 7,
     "is_bad_smell": false,
-    "smell_probability": 0.10876485997416667,
+    "smell_probability": 0.0002659988983818494,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -608,8 +433,8 @@
     "file": "cli.py",
     "start_line": 144,
     "num_lines": 44,
-    "is_bad_smell": false,
-    "smell_probability": 0.13540173623018242,
+    "is_bad_smell": true,
+    "smell_probability": 0.9605272674308813,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -621,9 +446,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 2.0059676422060924,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 2.00484491579898,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 2.0037221893918673,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 2.0025994629847546,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973842811
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 2.0014767365776422,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "run_pipeline",
@@ -631,8 +493,8 @@
     "file": "cli.py",
     "start_line": 190,
     "num_lines": 276,
-    "is_bad_smell": false,
-    "smell_probability": 0.1248436006263329,
+    "is_bad_smell": true,
+    "smell_probability": 0.8597952348512573,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -644,9 +506,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 2.017529059074791,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 2.016406332667678,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.4134808853094
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 2.0152836062605655,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.072434607640936
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 2.014160879853453,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973842811
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 2.013038153446341,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "main",
@@ -655,7 +554,7 @@
     "start_line": 468,
     "num_lines": 48,
     "is_bad_smell": false,
-    "smell_probability": 0.14051784547720875,
+    "smell_probability": 0.14119376127836367,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -678,7 +577,7 @@
     "start_line": 47,
     "num_lines": 27,
     "is_bad_smell": false,
-    "smell_probability": 0.12484819589783262,
+    "smell_probability": 0.4024457391366314,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -701,7 +600,7 @@
     "start_line": 76,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.15922511605858328,
+    "smell_probability": 0.0006367387531604966,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -724,7 +623,7 @@
     "start_line": 87,
     "num_lines": 13,
     "is_bad_smell": false,
-    "smell_probability": 0.24105691050768402,
+    "smell_probability": 0.000980770401322038,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -746,8 +645,8 @@
     "file": "src/code_smell_detector.py",
     "start_line": 102,
     "num_lines": 28,
-    "is_bad_smell": true,
-    "smell_probability": 0.6999958516092828,
+    "is_bad_smell": false,
+    "smell_probability": 0.014645620828587152,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -759,46 +658,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 3.014633117284109,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 3.0135103908769962,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.4134808853094
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 3.012387664469884,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 3.011264938062771,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973842811
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 3.010142211655659,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "predict_smell_batch",
@@ -806,8 +668,8 @@
     "file": "src/code_smell_detector.py",
     "start_line": 132,
     "num_lines": 19,
-    "is_bad_smell": true,
-    "smell_probability": 0.596801340198762,
+    "is_bad_smell": false,
+    "smell_probability": 0.007769874382674142,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -819,46 +681,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 3.0185788297816654,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 3.017456103374553,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.41348088531436
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 3.0163333769674403,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 3.015210650560328,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.548289738433056
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 3.0140879241532152,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "count_lines",
@@ -867,7 +692,7 @@
     "start_line": 57,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.016776371378063665,
+    "smell_probability": 0.00046873739342086495,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -889,8 +714,8 @@
     "file": "src/llm_recommender.py",
     "start_line": 63,
     "num_lines": 4,
-    "is_bad_smell": true,
-    "smell_probability": 0.811408871460221,
+    "is_bad_smell": false,
+    "smell_probability": 0.0008728920105672374,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -902,46 +727,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 2.022760390705889,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 2.0216376642987766,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.41348088531436
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 2.0205149378916643,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.072434607650834
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 2.0193922114845515,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.548289738433056
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 2.0182694850774388,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "has_docstring",
@@ -950,7 +738,7 @@
     "start_line": 69,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.08077828116411669,
+    "smell_probability": 5.8637121919495165e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -973,7 +761,7 @@
     "start_line": 73,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.14920324614072394,
+    "smell_probability": 9.997446496396653e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -996,7 +784,7 @@
     "start_line": 79,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.11945622576026148,
+    "smell_probability": 0.00015078519429780003,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1019,7 +807,7 @@
     "start_line": 83,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.004918588573020112,
+    "smell_probability": 0.00014387880268742288,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1041,8 +829,8 @@
     "file": "src/llm_recommender.py",
     "start_line": 92,
     "num_lines": 55,
-    "is_bad_smell": false,
-    "smell_probability": 0.12488064520995734,
+    "is_bad_smell": true,
+    "smell_probability": 0.9999999610707454,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1054,9 +842,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 3.0186666765237797,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 3.017543950116667,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.4134808853094
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 3.0164212237095542,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.072434607640936
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 3.015298497302442,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973842811
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 3.0141757708953296,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "count_smells",
@@ -1065,7 +890,7 @@
     "start_line": 149,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.056640695777514266,
+    "smell_probability": 5.278443429252925e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1088,7 +913,7 @@
     "start_line": 170,
     "num_lines": 8,
     "is_bad_smell": false,
-    "smell_probability": 0.22815775250590223,
+    "smell_probability": 0.0013975245533526008,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1110,8 +935,8 @@
     "file": "src/llm_recommender.py",
     "start_line": 180,
     "num_lines": 53,
-    "is_bad_smell": false,
-    "smell_probability": 0.3529721735128073,
+    "is_bad_smell": true,
+    "smell_probability": 0.975820670128917,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1123,9 +948,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 1.0120544576564827,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 1.0109317312493702,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531187
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 1.0098090048422577,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 1.0086862784351451,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973843059
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 1.0075635520280326,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "quality_features",
@@ -1133,8 +995,8 @@
     "file": "src/llm_recommender.py",
     "start_line": 238,
     "num_lines": 51,
-    "is_bad_smell": false,
-    "smell_probability": 0.2374063854030921,
+    "is_bad_smell": true,
+    "smell_probability": 0.852393329253166,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1146,9 +1008,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
+    "best_llm": "GPT-OSS 120B",
     "refactored": false,
-    "refactor_error": null
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 2.0038393538942114,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 2.002716627487099,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 2.0015939010799864,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 2.0004711746728736,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973842811
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 1.9993484482657613,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "metrics_features",
@@ -1157,7 +1056,7 @@
     "start_line": 291,
     "num_lines": 38,
     "is_bad_smell": false,
-    "smell_probability": 0.35194735130126903,
+    "smell_probability": 0.06423608737946628,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1179,8 +1078,8 @@
     "file": "src/llm_recommender.py",
     "start_line": 334,
     "num_lines": 122,
-    "is_bad_smell": false,
-    "smell_probability": 0.12546848804405578,
+    "is_bad_smell": true,
+    "smell_probability": 0.9999999989540859,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1192,9 +1091,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 3.0183901799759463,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 3.017267453568834,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 3.016144727161721,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 3.015022000754609,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.548289738433056
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 3.013899274347496,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "norm",
@@ -1203,7 +1139,7 @@
     "start_line": 441,
     "num_lines": 3,
     "is_bad_smell": false,
-    "smell_probability": 0.11318399820331584,
+    "smell_probability": 2.250614327536261e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1226,7 +1162,7 @@
     "start_line": 458,
     "num_lines": 24,
     "is_bad_smell": false,
-    "smell_probability": 0.3199188785667683,
+    "smell_probability": 0.001995347450665124,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1249,7 +1185,7 @@
     "start_line": 484,
     "num_lines": 8,
     "is_bad_smell": false,
-    "smell_probability": 0.16751793741758314,
+    "smell_probability": 0.00024387672382478388,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1271,8 +1207,8 @@
     "file": "src/refactoring_engine.py",
     "start_line": 62,
     "num_lines": 122,
-    "is_bad_smell": false,
-    "smell_probability": 0.15917018886118497,
+    "is_bad_smell": true,
+    "smell_probability": 0.9999999997895745,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 1,
@@ -1284,9 +1220,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 3.0081326994173505,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 3.007009973010238,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 3.0058872466031255,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 3.004764520196013,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.548289738433056
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 3.0036417937889004,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "_clean_code_output",
@@ -1295,7 +1268,7 @@
     "start_line": 186,
     "num_lines": 14,
     "is_bad_smell": false,
-    "smell_probability": 0.23703896652392806,
+    "smell_probability": 0.0033304631344166407,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1318,7 +1291,7 @@
     "start_line": 202,
     "num_lines": 18,
     "is_bad_smell": false,
-    "smell_probability": 0.09251451856954007,
+    "smell_probability": 0.0155154901743567,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1341,7 +1314,7 @@
     "start_line": 24,
     "num_lines": 27,
     "is_bad_smell": false,
-    "smell_probability": 0.13047870231850955,
+    "smell_probability": 0.0009255459261999697,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1363,8 +1336,8 @@
     "file": "src/repo_analyzer.py",
     "start_line": 53,
     "num_lines": 23,
-    "is_bad_smell": true,
-    "smell_probability": 0.8710746918883313,
+    "is_bad_smell": false,
+    "smell_probability": 0.034197167369816095,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1376,46 +1349,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 3.0220656423206385,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 3.0209429159135257,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.4134808853094
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 3.0198201895064134,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 3.0186974630993006,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973842811
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 3.0175747366921883,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "__init__",
@@ -1424,7 +1360,7 @@
     "start_line": 84,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.02287106069380816,
+    "smell_probability": 0.00028770641804708245,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1447,7 +1383,7 @@
     "start_line": 89,
     "num_lines": 44,
     "is_bad_smell": true,
-    "smell_probability": 0.6645081610264824,
+    "smell_probability": 0.9754623917510693,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1486,10 +1422,10 @@
       },
       {
         "model": "Claude Sonnet 4.6",
-        "quality": 3.0039705462860704,
+        "quality": 3.00397054628607,
         "time_ms": 2000,
         "cost": 0.0015,
-        "composite": 35.548289738433056
+        "composite": 35.54828973842811
       },
       {
         "model": "Claude Opus",
@@ -1507,7 +1443,7 @@
     "start_line": 134,
     "num_lines": 8,
     "is_bad_smell": false,
-    "smell_probability": 0.2405327252626533,
+    "smell_probability": 0.00019347961118156088,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1530,7 +1466,7 @@
     "start_line": 143,
     "num_lines": 4,
     "is_bad_smell": false,
-    "smell_probability": 0.06637287948589626,
+    "smell_probability": 0.00010532227978222876,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1553,7 +1489,7 @@
     "start_line": 148,
     "num_lines": 6,
     "is_bad_smell": false,
-    "smell_probability": 0.1347274129819931,
+    "smell_probability": 0.0001398460133912663,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1576,7 +1512,7 @@
     "start_line": 157,
     "num_lines": 35,
     "is_bad_smell": false,
-    "smell_probability": 0.20905561584218105,
+    "smell_probability": 0.40492425144318966,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1599,7 +1535,7 @@
     "start_line": 194,
     "num_lines": 25,
     "is_bad_smell": false,
-    "smell_probability": 0.4548088002988991,
+    "smell_probability": 0.0008860019412516485,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1621,8 +1557,8 @@
     "file": "src/repo_analyzer.py",
     "start_line": 221,
     "num_lines": 17,
-    "is_bad_smell": true,
-    "smell_probability": 0.7977852969096577,
+    "is_bad_smell": false,
+    "smell_probability": 0.03232328067183012,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1634,46 +1570,9 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": "GPT-OSS 120B",
-    "refactored": true,
-    "refactor_error": null,
-    "llm_ranking": [
-      {
-        "model": "GPT-OSS 120B",
-        "quality": 3.0125679998113473,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
-      },
-      {
-        "model": "Gemini Flash",
-        "quality": 3.0114452734042345,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.4134808853094
-      },
-      {
-        "model": "Gemini 3.1 Pro",
-        "quality": 3.010322546997122,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
-      },
-      {
-        "model": "Claude Sonnet 4.6",
-        "quality": 3.0091998205900095,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973842811
-      },
-      {
-        "model": "Claude Opus",
-        "quality": 3.008077094182897,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
-      }
-    ]
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
   },
   {
     "name": "scan_files",
@@ -1682,7 +1581,7 @@
     "start_line": 240,
     "num_lines": 39,
     "is_bad_smell": true,
-    "smell_probability": 0.9851399388755929,
+    "smell_probability": 0.6128543428223096,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1721,10 +1620,10 @@
       },
       {
         "model": "Claude Sonnet 4.6",
-        "quality": 3.0154556709953506,
+        "quality": 3.01545567099535,
         "time_ms": 2000,
         "cost": 0.0015,
-        "composite": 35.548289738433056
+        "composite": 35.54828973842811
       },
       {
         "model": "Claude Opus",
@@ -1742,7 +1641,7 @@
     "start_line": 23,
     "num_lines": 29,
     "is_bad_smell": false,
-    "smell_probability": 0.1347097433494191,
+    "smell_probability": 0.05214519942976585,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1765,7 +1664,7 @@
     "start_line": 54,
     "num_lines": 8,
     "is_bad_smell": false,
-    "smell_probability": 0.06194336825274622,
+    "smell_probability": 0.0004628005706171263,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1788,7 +1687,7 @@
     "start_line": 64,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06492554826076258,
+    "smell_probability": 1.7494870801010756e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1811,7 +1710,7 @@
     "start_line": 68,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06667364064892982,
+    "smell_probability": 1.7986726117580895e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1834,7 +1733,7 @@
     "start_line": 72,
     "num_lines": 2,
     "is_bad_smell": false,
-    "smell_probability": 0.06145000428690685,
+    "smell_probability": 1.6669904628199545e-05,
     "smell_details": {
       "long_method": 0,
       "long_param_list": 0,
@@ -1857,7 +1756,7 @@
     "start_line": 65,
     "num_lines": 21,
     "is_bad_smell": false,
-    "smell_probability": 0.1248468271174664,
+    "smell_probability": 0.30732278722056333,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1879,8 +1778,8 @@
     "file": "src/train_smell_model.py",
     "start_line": 88,
     "num_lines": 166,
-    "is_bad_smell": false,
-    "smell_probability": 0.1248436006263329,
+    "is_bad_smell": true,
+    "smell_probability": 0.6764930628141764,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1892,9 +1791,46 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 2.012825739024105,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 2.0117030126169926,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531436
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 2.01058028620988,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 2.0094575598027675,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.548289738433056
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 2.0083348333956548,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   },
   {
     "name": "main",
@@ -1902,8 +1838,8 @@
     "file": "src/train_smell_model.py",
     "start_line": 256,
     "num_lines": 84,
-    "is_bad_smell": false,
-    "smell_probability": 0.12710684125741484,
+    "is_bad_smell": true,
+    "smell_probability": 0.9951610483225197,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -1915,8 +1851,45 @@
       "commented_code": 0,
       "poor_naming": 0
     },
-    "best_llm": null,
-    "refactored": false,
-    "refactor_error": null
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 1.0084833270379043,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 1.0073606006307918,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531187
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 1.0062378742236793,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 1.0051151478165667,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973843059
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 1.0039924214094542,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
   }
 ]

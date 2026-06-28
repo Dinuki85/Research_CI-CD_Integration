@@ -35,6 +35,10 @@ env:
   # Set your OpenRouter API key as a GitHub Secret: OPENROUTER_API_KEY
   OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   analyze:
     name: Analyze Code Smells
@@ -365,7 +369,7 @@ jobs:
               --body-file pr_body.txt \
               --base main \
               --head "$BRANCH_NAME" \
-              --label "automated-refactoring" || echo "PR already exists"
+              --label "automated-refactoring"
           else
             echo "No python files or reports were changed. Skipping PR creation."
           fi

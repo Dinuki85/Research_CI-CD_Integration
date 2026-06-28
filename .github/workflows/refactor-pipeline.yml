@@ -296,8 +296,13 @@ jobs:
           fi
       - name: Revert model changes to prevent Git LFS issues
         run: |
-          git restore models/ || git checkout -- models/ || true
-          git clean -f models/ || true
+          git reset HEAD models/ || true
+          git restore --staged models/ || true
+          git checkout -f -- models/ || true
+          git clean -xfd models/ || true
+          # Forcefully remove if they are still modified
+          rm -rf models/*.pkl
+          git checkout HEAD -- models/ || true
 
       - name: Create Pull Request with refactored code
         if: always()
@@ -305,6 +310,10 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            *.py
+            **/*.py
+            refactor-report.json
           commit-message: "CodeRefactor AI: Automated refactoring of bad-smell functions"
           title: "[CodeRefactor AI] Automated Code Refactoring"
           body: |

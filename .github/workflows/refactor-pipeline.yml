@@ -311,7 +311,6 @@ jobs:
 
       - name: Create Pull Request with refactored code
         if: always()
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -368,8 +367,7 @@ jobs:
               --title "[CodeRefactor AI] Automated Code Refactoring" \
               --body-file pr_body.txt \
               --base main \
-              --head "$BRANCH_NAME" \
-              --label "automated-refactoring"
+              --head "$BRANCH_NAME"
           else
             echo "No python files or reports were changed. Skipping PR creation."
           fi

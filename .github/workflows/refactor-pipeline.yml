@@ -296,6 +296,7 @@ jobs:
           fi
       - name: Revert model changes to prevent Git LFS issues
         run: |
+          git lfs install
           git reset HEAD models/ || true
           git restore --staged models/ || true
           git checkout -f -- models/ || true

@@ -1,83 +1,88 @@
-def calculate_global_shipping_cost_and_tax_rate_for_checkout(country_code, state_code, base_weight, express_shipping):
+def generate_detailed_employee_performance_report_string(employee_data):
     """
-    An extremely long method that relies on endless if/elif statements
-    instead of using a data structure or separate functions.
+    An excessively long method that manually builds a massive string
+    line by line with repetitive checks, instead of using templates.
     """
-    total_cost = 0.0
-    tax_rate = 0.0
+    report = "=== EMPLOYEE PERFORMANCE REPORT ===\n"
     
-    # 50+ lines of raw logic all jammed into one function
-    if country_code == "US":
-        if state_code == "CA":
-            total_cost = base_weight * 1.5
-            tax_rate = 0.0725
-        elif state_code == "NY":
-            total_cost = base_weight * 1.6
-            tax_rate = 0.0400
-        elif state_code == "TX":
-            total_cost = base_weight * 1.2
-            tax_rate = 0.0625
-        elif state_code == "FL":
-            total_cost = base_weight * 1.3
-            tax_rate = 0.0600
-        elif state_code == "WA":
-            total_cost = base_weight * 1.4
-            tax_rate = 0.0650
-        elif state_code == "OR":
-            total_cost = base_weight * 1.4
-            tax_rate = 0.0000
-        elif state_code == "NV":
-            total_cost = base_weight * 1.2
-            tax_rate = 0.0810
-        elif state_code == "AZ":
-            total_cost = base_weight * 1.2
-            tax_rate = 0.0560
-        else:
-            total_cost = base_weight * 1.1
-            tax_rate = 0.0500
-            
-    elif country_code == "CA":
-        if state_code == "ON":
-            total_cost = base_weight * 2.0
-            tax_rate = 0.13
-        elif state_code == "QC":
-            total_cost = base_weight * 2.1
-            tax_rate = 0.14975
-        elif state_code == "BC":
-            total_cost = base_weight * 2.2
-            tax_rate = 0.12
-        elif state_code == "AB":
-            total_cost = base_weight * 1.8
-            tax_rate = 0.05
-        else:
-            total_cost = base_weight * 1.9
-            tax_rate = 0.05
-            
-    elif country_code == "UK":
-        total_cost = base_weight * 3.5
-        tax_rate = 0.20
-        
-    elif country_code == "AU":
-        if state_code == "NSW":
-            total_cost = base_weight * 4.0
-            tax_rate = 0.10
-        elif state_code == "VIC":
-            total_cost = base_weight * 4.1
-            tax_rate = 0.10
-        else:
-            total_cost = base_weight * 4.2
-            tax_rate = 0.10
-            
+    # 50+ lines of raw string concatenation and redundant checks
+    if "first_name" in employee_data and "last_name" in employee_data:
+        report += "Name: " + employee_data["first_name"] + " " + employee_data["last_name"] + "\n"
     else:
-        # Default fallback for all other countries
-        total_cost = base_weight * 5.0
-        tax_rate = 0.15
-
-    # Applying express shipping multiplier
-    if express_shipping:
-        total_cost = total_cost * 2.5
+        report += "Name: UNKNOWN\n"
         
-    # Adding tax
-    final_amount = total_cost + (total_cost * tax_rate)
+    if "department" in employee_data:
+        if employee_data["department"] == "Engineering":
+            report += "Dept: Engineering (Technical)\n"
+        elif employee_data["department"] == "Sales":
+            report += "Dept: Sales (Revenue)\n"
+        elif employee_data["department"] == "HR":
+            report += "Dept: Human Resources (Internal)\n"
+        elif employee_data["department"] == "Marketing":
+            report += "Dept: Marketing (Growth)\n"
+        else:
+            report += "Dept: " + employee_data["department"] + "\n"
+    else:
+        report += "Dept: UNASSIGNED\n"
+        
+    report += "\n--- Q1 Performance ---\n"
+    if "q1_score" in employee_data:
+        score = employee_data["q1_score"]
+        if score >= 90:
+            report += "Rating: EXCELLENT\n"
+        elif score >= 80:
+            report += "Rating: GOOD\n"
+        elif score >= 70:
+            report += "Rating: AVERAGE\n"
+        elif score >= 60:
+            report += "Rating: NEEDS IMPROVEMENT\n"
+        else:
+            report += "Rating: POOR\n"
+    else:
+        report += "Rating: N/A\n"
+        
+    report += "\n--- Q2 Performance ---\n"
+    if "q2_score" in employee_data:
+        score = employee_data["q2_score"]
+        if score >= 90:
+            report += "Rating: EXCELLENT\n"
+        elif score >= 80:
+            report += "Rating: GOOD\n"
+        elif score >= 70:
+            report += "Rating: AVERAGE\n"
+        elif score >= 60:
+            report += "Rating: NEEDS IMPROVEMENT\n"
+        else:
+            report += "Rating: POOR\n"
+    else:
+        report += "Rating: N/A\n"
+        
+    report += "\n--- Q3 Performance ---\n"
+    if "q3_score" in employee_data:
+        score = employee_data["q3_score"]
+        if score >= 90:
+            report += "Rating: EXCELLENT\n"
+        elif score >= 80:
+            report += "Rating: GOOD\n"
+        elif score >= 70:
+            report += "Rating: AVERAGE\n"
+        elif score >= 60:
+            report += "Rating: NEEDS IMPROVEMENT\n"
+        else:
+            report += "Rating: POOR\n"
+    else:
+        report += "Rating: N/A\n"
+        
+    report += "\n--- Final Remarks ---\n"
+    if "manager_notes" in employee_data:
+        notes = employee_data["manager_notes"]
+        if len(notes) > 100:
+            report += "Notes: " + notes[:100] + "...\n"
+        else:
+            report += "Notes: " + notes + "\n"
+    else:
+        report += "Notes: None provided.\n"
+        
+    report += "===================================\n"
     
-    return final_amount
+    return report

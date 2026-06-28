@@ -60,22 +60,10 @@ def count_lines(s: str) -> int:
     return sum(1 for l in s.replace("\\n", "\n").split("\n") if l.strip())
 
 
-KEYWORDS = ("if ", "for ", "while ", "try:", "except", "with ")
-
-
-def count_keywords(source: str) -> int:
-    """Count occurrences of specific Python keywords in a string.
-
-    Args:
-        source: The string to search for keywords.
-
-    Returns:
-        The total count of occurrences of the defined keywords in the string.
-        Returns 0 if `source` is not a string.
-    """
-    if not isinstance(source, str):
+def count_keywords(s: str) -> int:
+    if not isinstance(s, str):
         return 0
-    return sum(source.count(keyword) for keyword in KEYWORDS)
+    return sum(s.count(k) for k in ("if ", "for ", "while ", "try:", "except", "with "))
 
 
 def has_docstring(s: str) -> int:

@@ -292,7 +292,12 @@ jobs:
             echo "failed=0" >> $GITHUB_OUTPUT
             echo "details=No report found." >> $GITHUB_OUTPUT
           fi
-
+      - name: Clean up LFS files
+        run: git restore models/
+      - name: Create Pull Request with refactored code
+        if: always()
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v8
       - name: Create Pull Request with refactored code
         if: always()
         continue-on-error: true

@@ -60,10 +60,35 @@ def count_lines(s: str) -> int:
     return sum(1 for l in s.replace("\\n", "\n").split("\n") if l.strip())
 
 
+KEYWORDS = ("if ", "for ", "while ", "try:", "except", "with ")
+
+
+def _count_keyword_occurrences(text: str, keywords: tuple[str, ...]) -> int:
+    """Return the total number of occurrences of each keyword in *text*.
+
+    Args:
+        text: The string to search.
+        keywords: A collection of keyword substrings to count.
+
+    Returns:
+        The sum of occurrences of all keywords.
+    """
+    return sum(text.count(keyword) for keyword in keywords)
+
+
 def count_keywords(s: str) -> int:
+    """Count specific Python control‑flow keywords in a string.
+
+    Args:
+        s: The string to be examined.
+
+    Returns:
+        The total count of occurrences of the defined keywords.
+        Returns ``0`` if *s* is not a string.
+    """
     if not isinstance(s, str):
         return 0
-    return sum(s.count(k) for k in ("if ", "for ", "while ", "try:", "except", "with "))
+    return _count_keyword_occurrences(s, KEYWORDS)
 
 
 def has_docstring(s: str) -> int:

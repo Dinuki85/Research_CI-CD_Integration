@@ -1,88 +1,83 @@
-def generate_detailed_employee_performance_report_string(employee_data):
+def validate_and_process_incoming_ecommerce_order_payload(order_payload):
     """
-    An excessively long method that manually builds a massive string
-    line by line with repetitive checks, instead of using templates.
+    An extremely long, deeply nested function that tries to validate
+    an entire complex JSON structure all at once.
     """
-    report = "=== EMPLOYEE PERFORMANCE REPORT ===\n"
+    response = {"status": "error", "message": "Unknown error", "order_id": None}
     
-    # 50+ lines of raw string concatenation and redundant checks
-    if "first_name" in employee_data and "last_name" in employee_data:
-        report += "Name: " + employee_data["first_name"] + " " + employee_data["last_name"] + "\n"
-    else:
-        report += "Name: UNKNOWN\n"
-        
-    if "department" in employee_data:
-        if employee_data["department"] == "Engineering":
-            report += "Dept: Engineering (Technical)\n"
-        elif employee_data["department"] == "Sales":
-            report += "Dept: Sales (Revenue)\n"
-        elif employee_data["department"] == "HR":
-            report += "Dept: Human Resources (Internal)\n"
-        elif employee_data["department"] == "Marketing":
-            report += "Dept: Marketing (Growth)\n"
+    if order_payload is not None:
+        if "order_id" in order_payload:
+            order_id = order_payload["order_id"]
+            if order_id != "":
+                if "customer" in order_payload:
+                    customer = order_payload["customer"]
+                    if "email" in customer and "@" in customer["email"]:
+                        if "address" in customer:
+                            address = customer["address"]
+                            if "street" in address and address["street"] != "":
+                                if "city" in address and address["city"] != "":
+                                    if "zip_code" in address and len(address["zip_code"]) >= 5:
+                                        
+                                        # Now check items
+                                        if "items" in order_payload:
+                                            items = order_payload["items"]
+                                            if len(items) > 0:
+                                                total_price = 0.0
+                                                all_items_valid = True
+                                                
+                                                for item in items:
+                                                    if "sku" in item and item["sku"] != "":
+                                                        if "quantity" in item and item["quantity"] > 0:
+                                                            if "price" in item and item["price"] >= 0:
+                                                                total_price += (item["price"] * item["quantity"])
+                                                            else:
+                                                                all_items_valid = False
+                                                                response["message"] = "Invalid price on item"
+                                                        else:
+                                                            all_items_valid = False
+                                                            response["message"] = "Invalid quantity on item"
+                                                    else:
+                                                        all_items_valid = False
+                                                        response["message"] = "Invalid SKU on item"
+                                                        
+                                                # If all items are valid, check payment
+                                                if all_items_valid:
+                                                    if "payment_method" in order_payload:
+                                                        payment = order_payload["payment_method"]
+                                                        if payment == "credit_card" or payment == "paypal" or payment == "bank_transfer":
+                                                            if total_price > 0:
+                                                                # Finally successful!
+                                                                response["status"] = "success"
+                                                                response["message"] = "Order processed"
+                                                                response["order_id"] = order_id
+                                                                response["total"] = total_price
+                                                            else:
+                                                                response["message"] = "Total price must be greater than zero"
+                                                        else:
+                                                            response["message"] = "Unsupported payment method"
+                                                    else:
+                                                        response["message"] = "Missing payment method"
+                                            else:
+                                                response["message"] = "Order has no items"
+                                        else:
+                                            response["message"] = "Missing items array"
+                                    else:
+                                        response["message"] = "Invalid zip code"
+                                else:
+                                    response["message"] = "Invalid city"
+                            else:
+                                response["message"] = "Invalid street"
+                        else:
+                            response["message"] = "Missing address"
+                    else:
+                        response["message"] = "Invalid or missing email"
+                else:
+                    response["message"] = "Missing customer object"
+            else:
+                response["message"] = "Empty order ID"
         else:
-            report += "Dept: " + employee_data["department"] + "\n"
+            response["message"] = "Missing order ID"
     else:
-        report += "Dept: UNASSIGNED\n"
+        response["message"] = "Payload is null"
         
-    report += "\n--- Q1 Performance ---\n"
-    if "q1_score" in employee_data:
-        score = employee_data["q1_score"]
-        if score >= 90:
-            report += "Rating: EXCELLENT\n"
-        elif score >= 80:
-            report += "Rating: GOOD\n"
-        elif score >= 70:
-            report += "Rating: AVERAGE\n"
-        elif score >= 60:
-            report += "Rating: NEEDS IMPROVEMENT\n"
-        else:
-            report += "Rating: POOR\n"
-    else:
-        report += "Rating: N/A\n"
-        
-    report += "\n--- Q2 Performance ---\n"
-    if "q2_score" in employee_data:
-        score = employee_data["q2_score"]
-        if score >= 90:
-            report += "Rating: EXCELLENT\n"
-        elif score >= 80:
-            report += "Rating: GOOD\n"
-        elif score >= 70:
-            report += "Rating: AVERAGE\n"
-        elif score >= 60:
-            report += "Rating: NEEDS IMPROVEMENT\n"
-        else:
-            report += "Rating: POOR\n"
-    else:
-        report += "Rating: N/A\n"
-        
-    report += "\n--- Q3 Performance ---\n"
-    if "q3_score" in employee_data:
-        score = employee_data["q3_score"]
-        if score >= 90:
-            report += "Rating: EXCELLENT\n"
-        elif score >= 80:
-            report += "Rating: GOOD\n"
-        elif score >= 70:
-            report += "Rating: AVERAGE\n"
-        elif score >= 60:
-            report += "Rating: NEEDS IMPROVEMENT\n"
-        else:
-            report += "Rating: POOR\n"
-    else:
-        report += "Rating: N/A\n"
-        
-    report += "\n--- Final Remarks ---\n"
-    if "manager_notes" in employee_data:
-        notes = employee_data["manager_notes"]
-        if len(notes) > 100:
-            report += "Notes: " + notes[:100] + "...\n"
-        else:
-            report += "Notes: " + notes + "\n"
-    else:
-        report += "Notes: None provided.\n"
-        
-    report += "===================================\n"
-    
-    return report
+    return response

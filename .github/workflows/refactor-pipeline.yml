@@ -294,6 +294,11 @@ jobs:
             echo "failed=0" >> $GITHUB_OUTPUT
             echo "details=No report found." >> $GITHUB_OUTPUT
           fi
+      - name: Revert model changes to prevent Git LFS issues
+        run: |
+          git restore models/ || git checkout -- models/ || true
+          git clean -f models/ || true
+
       - name: Create Pull Request with refactored code
         if: always()
         continue-on-error: true

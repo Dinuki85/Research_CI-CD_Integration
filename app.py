@@ -1,83 +1,96 @@
-def validate_and_process_incoming_ecommerce_order_payload(order_payload):
+def process_new_user_registration_and_setup_account_profile(registration_data):
     """
-    An extremely long, deeply nested function that tries to validate
-    an entire complex JSON structure all at once.
+    An extremely long, deeply nested function that validates user data,
+    checks passwords, assigns roles, and builds a profile response 
+    all in one massive block of code.
     """
-    response = {"stats": "error", "message": "Unknown error", "order_id": None}
+    result = {"status": "failed", "reason": "Unknown error", "user_id": None}
     
-    if order_payload is not None:
-        if "order_id" in order_payload:
-            order_id = order_payload["order_id"]
-            if order_id != "":
-                if "customer" in order_payload:
-                    customer = order_payload["customer"]
-                    if "email" in customer and "@" in customer["email"]:
-                        if "address" in customer:
-                            address = customer["address"]
-                            if "street" in address and address["street"] != "":
-                                if "city" in address and address["city"] != "":
-                                    if "zip_code" in address and len(address["zip_code"]) >= 5:
-                                        
-                                        # Now check items
-                                        if "items" in order_payload:
-                                            items = order_payload["items"]
-                                            if len(items) > 0:
-                                                total_price = 0.0
-                                                all_items_valid = True
-                                                
-                                                for item in items:
-                                                    if "sku" in item and item["sku"] != "":
-                                                        if "quantity" in item and item["quantity"] > 0:
-                                                            if "price" in item and item["price"] >= 0:
-                                                                total_price += (item["price"] * item["quantity"])
+    if registration_data is not None:
+        if "username" in registration_data:
+            username = registration_data["username"]
+            if len(username) >= 5:
+                if "password" in registration_data:
+                    password = registration_data["password"]
+                    if len(password) >= 8:
+                        if any(char.isdigit() for char in password):
+                            if any(char.isupper() for char in password):
+                                if "personal_info" in registration_data:
+                                    info = registration_data["personal_info"]
+                                    if "first_name" in info and info["first_name"] != "":
+                                        if "last_name" in info and info["last_name"] != "":
+                                            if "age" in info:
+                                                age = info["age"]
+                                                if isinstance(age, int) and age >= 18:
+                                                    
+                                                    # Now check subscription preferences
+                                                    if "preferences" in registration_data:
+                                                        prefs = registration_data["preferences"]
+                                                        if "newsletter" in prefs:
+                                                            if "plan_type" in prefs:
+                                                                plan = prefs["plan_type"]
+                                                                
+                                                                if plan == "free" or plan == "basic" or plan == "premium":
+                                                                    
+                                                                    # Determine account limits based on plan
+                                                                    storage_limit = 0
+                                                                    api_calls = 0
+                                                                    
+                                                                    if plan == "free":
+                                                                        storage_limit = 500
+                                                                        api_calls = 100
+                                                                    elif plan == "basic":
+                                                                        storage_limit = 2000
+                                                                        api_calls = 1000
+                                                                    elif plan == "premium":
+                                                                        storage_limit = 10000
+                                                                        api_calls = 50000
+                                                                        
+                                                                    # Finally successful!
+                                                                    result["status"] = "success"
+                                                                    result["reason"] = "Account created successfully"
+                                                                    result["user_id"] = f"USR-{username.upper()}"
+                                                                    result["profile"] = {
+                                                                        "name": f"{info['first_name']} {info['last_name']}",
+                                                                        "age": age,
+                                                                        "plan": plan,
+                                                                        "limits": {
+                                                                            "storage_mb": storage_limit,
+                                                                            "monthly_api_calls": api_calls
+                                                                        },
+                                                                        "newsletter_subscribed": prefs["newsletter"]
+                                                                    }
+                                                                else:
+                                                                    result["reason"] = "Invalid plan type selected"
                                                             else:
-                                                                all_items_valid = False
-                                                                response["message"] = "Invalid price on item"
+                                                                result["reason"] = "Missing plan type"
                                                         else:
-                                                            all_items_valid = False
-                                                            response["message"] = "Invalid quantity on item"
+                                                            result["reason"] = "Missing newsletter preference"
                                                     else:
-                                                        all_items_valid = False
-                                                        response["message"] = "Invalid SKU on item"
-                                                        
-                                                # If all items are valid, check payment
-                                                if all_items_valid:
-                                                    if "payment_method" in order_payload:
-                                                        payment = order_payload["payment_method"]
-                                                        if payment == "credit_card" or payment == "paypal" or payment == "bank_transfer":
-                                                            if total_price > 0:
-                                                                # Finally successful!
-                                                                response["status"] = "success"
-                                                                response["message"] = "Order processed"
-                                                                response["order_id"] = order_id
-                                                                response["total"] = total_price
-                                                            else:
-                                                                response["message"] = "Total price must be greater than zero"
-                                                        else:
-                                                            response["message"] = "Unsupported payment method"
-                                                    else:
-                                                        response["message"] = "Missing payment method"
+                                                        result["reason"] = "Missing preferences object"
+                                                else:
+                                                    result["reason"] = "User must be 18 or older"
                                             else:
-                                                response["message"] = "Order has no items"
+                                                result["reason"] = "Missing age"
                                         else:
-                                            response["message"] = "Missing items array"
+                                            result["reason"] = "Invalid or missing last name"
                                     else:
-                                        response["message"] = "Invalid zip code"
+                                        result["reason"] = "Invalid or missing first name"
                                 else:
-                                    response["message"] = "Invalid city"
+                                    result["reason"] = "Missing personal info object"
                             else:
-                                response["message"] = "Invalid street"
+                                result["reason"] = "Password must contain an uppercase letter"
                         else:
-                            response["message"] = "Missing address"
+                            result["reason"] = "Password must contain a number"
                     else:
-                        response["message"] = "Invalid or missing email"
+                        result["reason"] = "Password must be at least 8 characters"
                 else:
-                    response["message"] = "Missing customer object"
+                    result["reason"] = "Missing password"
             else:
-                response["message"] = "Empty order ID"
+                result["reason"] = "Username must be at least 5 characters"
         else:
-            response["message"] = "Missing order ID"
+            result["reason"] = "Missing username"
     else:
-        response["message"] = "Payload is null"
+        result["reason"] = "Registration payload is null"
         
-    return response
+    return result

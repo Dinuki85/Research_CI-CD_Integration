@@ -31,7 +31,7 @@ fi
 
 # ── Find the project root (where cli.py lives) ───────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CLI_SCRIPT="$PROJECT_ROOT/cli.py"
 
 if [ ! -f "$CLI_SCRIPT" ]; then
@@ -49,7 +49,7 @@ fi
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════════════╗"
-echo "║     CodeRefactor AI — Auto-Refactoring Pre-Commit Hook         ║"
+echo "║     CodeRefactor AI — Auto-Refactoring Pre-Commit Hook           ║"
 echo "╚══════════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Staged Python files:"

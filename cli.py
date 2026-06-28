@@ -135,7 +135,7 @@ def print_file_header(file_path, index, total):
 def print_banner():
     print()
     print(bold(cyan("╔══════════════════════════════════════════════════════════════════╗")))
-    print(bold(cyan("║          CodeRefactor AI — Automated Python Refactoring         ║")))
+    print(bold(cyan("║          CodeRefactor AI — Automated Python Refactoring          ║")))
     print(bold(cyan("║          v{:<73}║".format(__version__))))
     print(bold(cyan("╚══════════════════════════════════════════════════════════════════╝")))
     print()

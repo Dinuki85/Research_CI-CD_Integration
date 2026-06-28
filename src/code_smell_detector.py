@@ -99,52 +99,137 @@ def _load_model():
     return _model, _scaler
 
 
-def predict_smell(code_str: str) -> dict:
-    """
-    Predict whether a Python function has the long-method code smell.
+from typing import TypedDict
 
-    Returns:
-        {
-            "is_bad_smell": bool,      # True if predicted as long method
-            "probability": float,       # probability of being bad (0-1)
-            "num_lines": int,           # non-empty lines in function
-            "is_long_method": bool,     # heuristic: > 20 lines
-        }
-    """
-    model, scaler = _load_model()
-    X = extract_features_vector(code_str)
-    X_scaled = scaler.transform(X)
+LONG_METHOD_THRESHOLD = 20
 
-    proba = model.predict_proba(X_scaled)[0, 1]  # probability of "Yes" (bad smell)
-    pred = model.predict(X_scaled)[0]
 
-    nonempty = [l for l in code_str.replace("\\n", "\n").split("\n") if l.strip()]
-    num_lines = len(nonempty)
+class SmellPrediction(TypedDict):
+    is_bad_smell: bool
+    probability: float
+    num_lines: int
+    is_long_method: bool
 
+
+def _load_resources() -> tuple:
+    """Load the trained model and its scaler."""
+    return _load_model()
+
+
+def _extract_feature_vector(code: str):
+    """Extract the feature vector from source code."""
+    return extract_features_vector(code)
+
+
+def _count_nonempty_lines(code: str) -> int:
+    """Count non‑empty lines in the provided source code."""
+    lines = code.replace("\\n", "\n").split("\n")
+    return sum(1 for line in lines if line.strip())
+
+
+def _build_result(prediction: int, probability: float, line_count: int) -> SmellPrediction:
+    """Construct the result dictionary from prediction data."""
     return {
-        "is_bad_smell": bool(pred == 1),
-        "probability": float(proba),
-        "num_lines": num_lines,
-        "is_long_method": num_lines > 20,  # heuristic baseline
+        "is_bad_smell": prediction == 1,
+        "probability": probability,
+        "num_lines": line_count,
+        "is_long_method": line_count > LONG_METHOD_THRESHOLD,
     }
 
 
-def predict_smell_batch(codes: list) -> list:
-    """Batch prediction for multiple functions."""
+def predict_smell(code_str: str) -> SmellPrediction:
+    """Predict whether a Python function exhibits the long‑method code smell.
+
+    Args:
+        code_str: Source code of the function to analyze.
+
+    Returns:
+        A dictionary with the following keys:
+            is_bad_smell: True if the model predicts a long‑method smell.
+            probability: Model's probability for the positive class (0‑1).
+            num_lines: Number of non‑empty lines in the function.
+            is_long_method: Heuristic flag indicating if the function exceeds
+                the long‑method threshold.
+
+    Raises:
+        Any exception raised by the underlying model or feature extraction.
+    """
+    model, scaler = _load_resources()
+    feature_vector = _extract_feature_vector(code_str)
+    scaled_vector = scaler.transform(feature_vector)
+
+    probability = float(model.predict_proba(scaled_vector)[0, 1])
+    prediction = int(model.predict(scaled_vector)[0])
+
+    line_count = _count_nonempty_lines(code_str)
+
+    return _build_result(prediction, probability, line_count)
+
+
+from typing import List, Dict, Any
+import numpy as np
+
+LONG_METHOD_THRESHOLD = 20
+
+
+def _prepare_features(codes: List[str]) -> np.ndarray:
+    """Extract and stack feature vectors for a list of code snippets."""
+    feature_vectors = [extract_features_vector(code) for code in codes]
+    return np.vstack(feature_vectors)
+
+
+def _predict(
+    model,
+    scaler,
+    features: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Scale features and obtain predictions and probabilities."""
+    scaled = scaler.transform(features)
+    probabilities = model.predict_proba(scaled)[:, 1]
+    predictions = model.predict(scaled)
+    return predictions, probabilities
+
+
+def _build_result(
+    code: str,
+    prediction: int,
+    probability: float,
+) -> Dict[str, Any]:
+    """Create a result dictionary for a single code snippet."""
+    nonempty_lines = [
+        line for line in code.replace("\\n", "\n").split("\n") if line.strip()
+    ]
+    return {
+        "is_bad_smell": prediction == 1,
+        "probability": float(probability),
+        "num_lines": len(nonempty_lines),
+        "is_long_method": len(nonempty_lines) > LONG_METHOD_THRESHOLD,
+    }
+
+
+def predict_smell_batch(codes: List[str]) -> List[Dict[str, Any]]:
+    """Predict code smell for a batch of code snippets.
+
+    Args:
+        codes: A list of source code strings to evaluate.
+
+    Returns:
+        A list of dictionaries, each containing:
+            - is_bad_smell (bool): Whether the snippet exhibits the smell.
+            - probability (float): Model confidence for the positive class.
+            - num_lines (int): Number of non‑empty lines in the snippet.
+            - is_long_method (bool): True if the snippet exceeds
+              LONG_METHOD_THRESHOLD lines.
+
+    Raises:
+        Any exception raised by the underlying model or scaler loading.
+    """
     model, scaler = _load_model()
-    X = np.vstack([extract_features_vector(c) for c in codes])
-    X_scaled = scaler.transform(X)
+    features = _prepare_features(codes)
+    predictions, probabilities = _predict(model, scaler, features)
 
-    probas = model.predict_proba(X_scaled)[:, 1]
-    preds = model.predict(X_scaled)
-
-    results = []
-    for i, code in enumerate(codes):
-        nonempty = [l for l in code.replace("\\n", "\n").split("\n") if l.strip()]
-        results.append({
-            "is_bad_smell": bool(preds[i] == 1),
-            "probability": float(probas[i]),
-            "num_lines": len(nonempty),
-            "is_long_method": len(nonempty) > 20,
-        })
+    results = [
+        _build_result(code, pred, prob)
+        for code, pred, prob in zip(codes, predictions, probabilities)
+    ]
     return results

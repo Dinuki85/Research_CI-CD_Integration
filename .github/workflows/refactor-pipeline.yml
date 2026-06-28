@@ -5,15 +5,15 @@ on:
   workflow_dispatch:
     inputs:
       repo_url:
-        description: 'Repository URL to analyze and refactor'
+        description: "Repository URL to analyze and refactor"
         required: true
         type: string
       function_only:
-        description: 'Only refactor functions matching this name (optional)'
+        description: "Only refactor functions matching this name (optional)"
         required: false
         type: string
       dry_run:
-        description: 'Dry run (analyze only, no refactoring)'
+        description: "Dry run (analyze only, no refactoring)"
         required: false
         default: false
         type: boolean
@@ -28,10 +28,10 @@ on:
 
   # Scheduled run (weekly: every Monday at 09:00 UTC)
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: "0 9 * * 1"
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
   # Set your OpenRouter API key as a GitHub Secret: OPENROUTER_API_KEY
   OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
@@ -301,6 +301,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "CodeRefactor AI: Automated refactoring of bad-smell functions"
           title: "[CodeRefactor AI] Automated Code Refactoring"
+          add-paths: |
+            *.py
+            **/*.py
           body: |
             ## 🤖 Automated Code Refactoring
 

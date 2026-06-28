@@ -3,7 +3,7 @@ def validate_and_process_incoming_ecommerce_order_payload(order_payload):
     An extremely long, deeply nested function that tries to validate
     an entire complex JSON structure all at once.
     """
-    response = {"status": "error", "message": "Unknown error", "order_id": None}
+    response = {"stats": "error", "message": "Unknown error", "order_id": None}
     
     if order_payload is not None:
         if "order_id" in order_payload:

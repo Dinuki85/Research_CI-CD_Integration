@@ -1,138 +1,76 @@
-import os
-import math
-import datetime
-
-# Global variables (bad practice)
-total_errors = 0
-transaction_log = []
-
-def process_customer_transaction_and_update_database_and_send_email_notification(
-    user_id, items_purchased, discount_code, is_vip, send_email, force_sync=False, debug_mode=1
-):
+def process_user_data_and_authenticate_and_save_to_db(user_payload, db_connection, auth_token, timeout_limit=30, max_retries=5):
     """
-    This function does way too much, has too many parameters, 
-    and uses deeply nested logic with magic numbers.
+    A massive God function that handles authentication, parsing, and DB operations.
+    It has high complexity, deep nesting, and multiple return paths.
     """
-    global total_errors
+    # Bad practice: mutable state tracking inside function
+    failed_attempts = 0
+    parsed_data = {}
     
-    # Magic numbers and uncommunicative variables
-    tax_rate = 0.0825
-    x = 0
-    y = 100
-    
-    if user_id > 0:
-        if len(items_purchased) > 0:
-            for item in items_purchased:
-                if item != "":
-                    if debug_mode == 1:
-                        print("Processing item:", item)
-                    elif debug_mode == 2:
-                        print("DEBUG LVL 2:", item)
-                        
-                    # Arbitrary math with magic numbers
-                    x = x + 42.5
-                    y = y - 3.14
-                    
-                    if is_vip:
-                        if discount_code == "SUPER_SAVE":
-                            x = x * 0.50
-                        else:
-                            x = x * 0.80
-                    else:
-                        if discount_code == "NORMAL":
-                            x = x * 0.95
-                        elif discount_code == "TINY":
-                            x = x * 0.99
-                            
-                else:
-                    total_errors += 1
-                    transaction_log.append("Empty item found")
-                    
-            # More nested loops!
-            for i in range(10):
-                for j in range(5):
-                    if i + j == 12:
-                        x = x + 1
-                        
-            try:
-                # Dangerous bare except and math
-                final_price = (x * tax_rate) + (y / 2)
-            except:
-                print("Math error!")
-                final_price = 0
+    if auth_token != "":
+        if len(auth_token) > 10:
+            if auth_token.startswith("Bearer "):
+                print("Valid token format")
                 
-            if send_email:
-                if final_price > 1000:
-                    print("Sending HIGH value email to user", user_id)
-                elif final_price > 500:
-                    print("Sending MEDIUM value email to user", user_id)
-                else:
-                    print("Sending NORMAL email to user", user_id)
-                    
-            return final_price
-        else:
-            return -1
-    else:
-        return -2
-
-
-def calculate_monthly_analytics_report_with_metrics(data_rows, retry_count=3):
-    """
-    Another long, complex function with inconsistent returns, 
-    multiple loops, and high indentation depth.
-    """
-    results = []
-    processed_count = 0
-    
-    # Loop over data
-    while processed_count < len(data_rows):
-        current_row = data_rows[processed_count]
-        
-        if current_row is not None:
-            if "status" in current_row:
-                if current_row["status"] == "active":
-                    if "value" in current_row:
-                        val = current_row["value"]
-                        
-                        # Inefficient string concatenation in a loop
-                        report_string = ""
-                        for char in str(val):
-                            report_string = report_string + char + "_"
-                            
-                        if val > 10000:
-                            results.append(report_string + "HIGH")
-                        elif val > 5000:
-                            results.append(report_string + "MED")
-                            return results  # Premature return in the middle of logic!
+                # Nested loop for no good reason
+                for i in range(max_retries):
+                    try:
+                        if db_connection is not None:
+                            if db_connection.is_open():
+                                print("DB is open")
+                                
+                                # Parsing payload
+                                if type(user_payload) == list:
+                                    for item in user_payload:
+                                        if "id" in item:
+                                            if item["id"] > 0:
+                                                if "name" in item:
+                                                    if item["name"] != "":
+                                                        # Deeply nested logic
+                                                        parsed_data[item["id"]] = item["name"]
+                                                        print("Added item", item["id"])
+                                                    else:
+                                                        print("Empty name")
+                                                else:
+                                                    print("Missing name")
+                                            else:
+                                                print("Invalid ID")
+                                        else:
+                                            failed_attempts += 1
+                                            if failed_attempts > 3:
+                                                print("Too many bad items")
+                                                return False
+                                else:
+                                    print("Payload is not a list")
+                                    return False
+                                
+                                # Break out of retry loop if successful
+                                if len(parsed_data) > 0:
+                                    break
+                            else:
+                                print("DB not open, retrying...")
+                                failed_attempts += 1
                         else:
-                            results.append(report_string + "LOW")
-                            
-                    else:
-                        print("Missing value")
+                            print("No DB connection")
+                            return False
+                    except:
+                        # Bare except block hiding connection errors
+                        print("Something went wrong with DB")
+                        failed_attempts += 1
+                        
+                # End of retry loop
+                if len(parsed_data) > 0:
+                    print("Successfully processed", len(parsed_data), "records")
+                    return True
                 else:
-                    if current_row["status"] == "pending":
-                        results.append("PENDING_ITEM")
-                    elif current_row["status"] == "failed":
-                        results.append("FAILED_ITEM")
-                    else:
-                        results.append("UNKNOWN")
+                    print("Failed after retries")
+                    return False
             else:
-                # Catch-all
-                pass
-        
-        processed_count += 1
-        
-        # Artificial retry logic adding more complexity
-        if processed_count % 10 == 0:
-            for r in range(retry_count):
-                if r == 2:
-                    print("Max retries hit on batch", processed_count)
-                    break
-                    
-    # Multiple return statements scattered everywhere
-    if len(results) == 0:
-        return None
-    elif len(results) > 150:
-        return results[:150]
+                print("Invalid token type")
+                return False
+        else:
+            print("Token too short")
+            return False
     else:
-        return results
+        print("Missing auth token")
+        return False

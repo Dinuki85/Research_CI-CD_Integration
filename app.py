@@ -1,76 +1,83 @@
-def process_user_data_and_authenticate_and_save_to_db(user_payload, db_connection, auth_token, timeout_limit=30, max_retries=5):
+def calculate_global_shipping_cost_and_tax_rate_for_checkout(country_code, state_code, base_weight, express_shipping):
     """
-    A massive God function that handles authentication, parsing, and DB operations.
-    It has high complexity, deep nesting, and multiple return paths.
+    An extremely long method that relies on endless if/elif statements
+    instead of using a data structure or separate functions.
     """
-    # Bad practice: mutable state tracking inside function
-    failed_attempts = 0
-    parsed_data = {}
+    total_cost = 0.0
+    tax_rate = 0.0
     
-    if auth_token != "":
-        if len(auth_token) > 10:
-            if auth_token.startswith("Bearer "):
-                print("Valid token format")
-                
-                # Nested loop for no good reason
-                for i in range(max_retries):
-                    try:
-                        if db_connection is not None:
-                            if db_connection.is_open():
-                                print("DB is open")
-                                
-                                # Parsing payload
-                                if type(user_payload) == list:
-                                    for item in user_payload:
-                                        if "id" in item:
-                                            if item["id"] > 0:
-                                                if "name" in item:
-                                                    if item["name"] != "":
-                                                        # Deeply nested logic
-                                                        parsed_data[item["id"]] = item["name"]
-                                                        print("Added item", item["id"])
-                                                    else:
-                                                        print("Empty name")
-                                                else:
-                                                    print("Missing name")
-                                            else:
-                                                print("Invalid ID")
-                                        else:
-                                            failed_attempts += 1
-                                            if failed_attempts > 3:
-                                                print("Too many bad items")
-                                                return False
-                                else:
-                                    print("Payload is not a list")
-                                    return False
-                                
-                                # Break out of retry loop if successful
-                                if len(parsed_data) > 0:
-                                    break
-                            else:
-                                print("DB not open, retrying...")
-                                failed_attempts += 1
-                        else:
-                            print("No DB connection")
-                            return False
-                    except:
-                        # Bare except block hiding connection errors
-                        print("Something went wrong with DB")
-                        failed_attempts += 1
-                        
-                # End of retry loop
-                if len(parsed_data) > 0:
-                    print("Successfully processed", len(parsed_data), "records")
-                    return True
-                else:
-                    print("Failed after retries")
-                    return False
-            else:
-                print("Invalid token type")
-                return False
+    # 50+ lines of raw logic all jammed into one function
+    if country_code == "US":
+        if state_code == "CA":
+            total_cost = base_weight * 1.5
+            tax_rate = 0.0725
+        elif state_code == "NY":
+            total_cost = base_weight * 1.6
+            tax_rate = 0.0400
+        elif state_code == "TX":
+            total_cost = base_weight * 1.2
+            tax_rate = 0.0625
+        elif state_code == "FL":
+            total_cost = base_weight * 1.3
+            tax_rate = 0.0600
+        elif state_code == "WA":
+            total_cost = base_weight * 1.4
+            tax_rate = 0.0650
+        elif state_code == "OR":
+            total_cost = base_weight * 1.4
+            tax_rate = 0.0000
+        elif state_code == "NV":
+            total_cost = base_weight * 1.2
+            tax_rate = 0.0810
+        elif state_code == "AZ":
+            total_cost = base_weight * 1.2
+            tax_rate = 0.0560
         else:
-            print("Token too short")
-            return False
+            total_cost = base_weight * 1.1
+            tax_rate = 0.0500
+            
+    elif country_code == "CA":
+        if state_code == "ON":
+            total_cost = base_weight * 2.0
+            tax_rate = 0.13
+        elif state_code == "QC":
+            total_cost = base_weight * 2.1
+            tax_rate = 0.14975
+        elif state_code == "BC":
+            total_cost = base_weight * 2.2
+            tax_rate = 0.12
+        elif state_code == "AB":
+            total_cost = base_weight * 1.8
+            tax_rate = 0.05
+        else:
+            total_cost = base_weight * 1.9
+            tax_rate = 0.05
+            
+    elif country_code == "UK":
+        total_cost = base_weight * 3.5
+        tax_rate = 0.20
+        
+    elif country_code == "AU":
+        if state_code == "NSW":
+            total_cost = base_weight * 4.0
+            tax_rate = 0.10
+        elif state_code == "VIC":
+            total_cost = base_weight * 4.1
+            tax_rate = 0.10
+        else:
+            total_cost = base_weight * 4.2
+            tax_rate = 0.10
+            
     else:
-        print("Missing auth token")
-        return False
+        # Default fallback for all other countries
+        total_cost = base_weight * 5.0
+        tax_rate = 0.15
+
+    # Applying express shipping multiplier
+    if express_shipping:
+        total_cost = total_cost * 2.5
+        
+    # Adding tax
+    final_amount = total_cost + (total_cost * tax_rate)
+    
+    return final_amount

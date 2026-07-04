@@ -39,6 +39,13 @@ if [ ! -f "$CLI_SCRIPT" ]; then
     exit 0
 fi
 
+# ── ML Language Detection ────────────────────────────────────────────────────
+echo "[CodeRefactor AI] Checking repository language with ML model..."
+python "$PROJECT_ROOT/src/language_detection.py" || {
+  echo "[CodeRefactor AI] Commit aborted: Non-Python repository detected."
+  exit 1
+}
+
 # ── Find staged Python files ─────────────────────────────────────────────────
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
 

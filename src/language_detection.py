@@ -51,6 +51,7 @@ def main():
                 f.write("proceed=false\n")
                 langs = ", ".join(detected_other_languages)
                 f.write(f"detected_languages={langs}\n")
+        sys.exit(1)
     elif python_detected:
         print("Only Python files detected. Proceeding...")
         if github_output:

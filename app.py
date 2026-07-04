@@ -121,3 +121,5 @@ def process_new_user_registration_and_setup_account_profile(
         return _error_result(error)
 
     return _build_success_result(username, personal_info, preferences)
+
+

@@ -16,6 +16,7 @@ def main():
     
     python_detected = False
     other_language_detected = False
+    detected_other_languages = set()
     
     # 2. Scan files in the repository (skipping hidden folders and the models folder)
     print("Scanning files for language detection...")
@@ -33,6 +34,7 @@ def main():
                     python_detected = True
                 else:
                     other_language_detected = True
+                    detected_other_languages.add(str(prediction))
                     print(f"Detected other language ({prediction}) in file: {file_path}")
                     
             except Exception:
@@ -47,6 +49,8 @@ def main():
         if github_output:
             with open(github_output, "a", encoding="utf-8") as f:
                 f.write("proceed=false\n")
+                langs = ", ".join(detected_other_languages)
+                f.write(f"detected_languages={langs}\n")
     elif python_detected:
         print("Only Python files detected. Proceeding...")
         if github_output:

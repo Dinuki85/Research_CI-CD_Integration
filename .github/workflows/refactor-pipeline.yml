@@ -74,7 +74,7 @@ jobs:
       - name: Stop if not Python
         if: steps.lang_detect.outputs.proceed == 'false'
         run: |
-          echo "Detected a language other than Python. Stopping the pipeline."
+          echo "Detected a language other than Python (${{ steps.lang_detect.outputs.detected_languages }}). Stopping the pipeline."
           exit 1 # This gracefully fails the step and stops the rest of the workflow
       # ------------------------------------
       - name: Detect changed Python files

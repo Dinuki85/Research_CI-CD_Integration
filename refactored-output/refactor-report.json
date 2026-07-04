@@ -1,0 +1,62 @@
+[
+  {
+    "name": "main",
+    "full_name": "main",
+    "file": "src\\language_detection.py",
+    "start_line": 6,
+    "num_lines": 54,
+    "is_bad_smell": true,
+    "smell_probability": 0.9905622818221356,
+    "smell_details": {
+      "long_method": 1,
+      "long_param_list": 0,
+      "deep_nesting": 1,
+      "magic_numbers": 1,
+      "no_docstring": 1,
+      "no_type_hints": 1,
+      "long_lines": 1,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": "GPT-OSS 120B",
+    "refactored": false,
+    "refactor_error": "HTTP 402: {\"error\":{\"message\":\"Insufficient credits. Add more using https://openrouter.ai/settings/credits\",\"code\":402}}",
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 1.0192582284429208,
+        "time_ms": 2000,
+        "cost": 1.4999999999999999e-05,
+        "composite": 85.0
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 1.0181355020358083,
+        "time_ms": 2000,
+        "cost": 0.00015,
+        "composite": 71.41348088531187
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 1.0170127756286957,
+        "time_ms": 2000,
+        "cost": 0.001,
+        "composite": 52.07243460764588
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 1.0158900492215832,
+        "time_ms": 2000,
+        "cost": 0.0015,
+        "composite": 35.54828973843059
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 1.0147673228144707,
+        "time_ms": 2000,
+        "cost": 0.0025,
+        "composite": 15.000000000000002
+      }
+    ]
+  }
+]

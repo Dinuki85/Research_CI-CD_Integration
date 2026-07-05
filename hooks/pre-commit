@@ -89,16 +89,38 @@ else
     echo "[CodeRefactor AI] ✅ Refactoring complete."
     echo ""
 
-    # ── Re-stage refactored files ────────────────────────────────────────────
+    # ── Interactive Review & Re-stage ─────────────────────────────────────────
     for f in $STAGED_FILES; do
         if [ -f "$PROJECT_ROOT/$f" ]; then
-            git add "$PROJECT_ROOT/$f"
-            echo "[CodeRefactor AI] Re-staged: $f"
+            # Check if the file was actually modified by the AI
+            if ! git diff --quiet "$PROJECT_ROOT/$f"; then
+                echo "──────────────────────────────────────────────────────────────────────"
+                echo "[CodeRefactor AI] Changes made to $f:"
+                git diff --color "$PROJECT_ROOT/$f"
+                echo "──────────────────────────────────────────────────────────────────────"
+                
+                # Ask the user for permission (Reading from /dev/tty connects to keyboard)
+                exec < /dev/tty
+                read -p "Do you want to accept these AI refactoring changes? (y/n) " accept
+                
+                if [ "$accept" = "y" ] || [ "$accept" = "Y" ]; then
+                    git add "$PROJECT_ROOT/$f"
+                    echo "[CodeRefactor AI] Changes accepted and staged: $f"
+                else
+                    echo "[CodeRefactor AI] Changes rejected for $f. Reverting to pre-refactor state..."
+                    git checkout "$PROJECT_ROOT/$f"
+                    echo "[CodeRefactor AI] Commit aborted so you can review the original code."
+                    exit 1
+                fi
+            else
+                # No changes made by the AI, just re-stage to be safe
+                git add "$PROJECT_ROOT/$f"
+            fi
         fi
     done
 
     echo ""
-    echo "[CodeRefactor AI] ✅ Refactored files re-staged for commit."
+    echo "[CodeRefactor AI] ✅ Review complete."
 fi
 
 # ── Show report path if available ────────────────────────────────────────────

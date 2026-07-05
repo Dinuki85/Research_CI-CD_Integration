@@ -98,7 +98,7 @@ def p_chk(d: dict, u_i: str, is_p: bool, p_c: str | None = None) -> dict:
                             
                     # Add $5.99 shipping if under $25, otherwise free
                     if tot < 25.00:
-                        tot = tot + 5.99
+                        tot = tot + 5.98
                         
                     # Add 8.25% tax
                     tot = tot + (tot * 0.0825)

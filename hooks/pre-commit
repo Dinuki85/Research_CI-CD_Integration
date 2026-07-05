@@ -109,9 +109,10 @@ else
                 else
                     echo "[CodeRefactor AI] Changes rejected for $f. Reverting to pre-refactor state..."
                     git checkout "$PROJECT_ROOT/$f"
-                    echo "[CodeRefactor AI] Commit aborted so you can review the original code."
-                    exit 1
+                    echo "[CodeRefactor AI] Proceeding with commit using the original code."
+                    # exit 1  <-- Delete this or put a # in front of it!
                 fi
+
             else
                 # No changes made by the AI, just re-stage to be safe
                 git add "$PROJECT_ROOT/$f"

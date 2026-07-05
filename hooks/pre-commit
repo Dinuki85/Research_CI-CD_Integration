@@ -96,7 +96,7 @@ else
             if ! git diff --quiet "$PROJECT_ROOT/$f"; then
                 echo "──────────────────────────────────────────────────────────────────────"
                 echo "[CodeRefactor AI] Changes made to $f:"
-                git diff --color "$PROJECT_ROOT/$f"
+               # git diff --color "$PROJECT_ROOT/$f"
                 echo "──────────────────────────────────────────────────────────────────────"
                 
                 # Ask the user for permission (Reading from /dev/tty connects to keyboard)

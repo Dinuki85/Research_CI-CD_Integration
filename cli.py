@@ -21,6 +21,8 @@ Usage:
 """
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import sys
 import json
 import time

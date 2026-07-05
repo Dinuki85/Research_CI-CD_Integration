@@ -23,10 +23,16 @@ def main():
     other_language_detected = False
     detected_other_languages = set()
     
-    # 2. Scan files in the repository (skipping hidden folders and the models folder)
+    # 2. Scan files in the repository (skipping hidden folders, models, and non-code files)
     print("Scanning files for language detection...")
+    
+    valid_extensions = {".py", ".java", ".cs", ".js", ".php"}
+    
     for file_path in Path(".").rglob("*"):
         if file_path.is_file() and not any(part.startswith('.') for part in file_path.parts) and 'models' not in file_path.parts:
+            if file_path.suffix.lower() not in valid_extensions:
+                continue
+                
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
@@ -40,7 +46,11 @@ def main():
                 x_word = tfidf_word.transform([combined])
                 x_lines = csr_matrix([[float(lines)]])
                 
-                X = hstack([x_char, x_word, x_lines])
+                # Some models (like Naive Bayes) drop the 'lines' feature and only expect 25,000 text features
+                if hasattr(model, "n_features_in_") and model.n_features_in_ == x_char.shape[1] + x_word.shape[1]:
+                    X = hstack([x_char, x_word])
+                else:
+                    X = hstack([x_char, x_word, x_lines])
                 
                 pred_label = model.predict(X)[0]
                 prediction = class_names[pred_label]
@@ -52,8 +62,8 @@ def main():
                     detected_other_languages.add(str(prediction))
                     print(f"Detected other language ({prediction}) in file: {file_path}")
                     
-            except Exception:
-                # Skip binary files or unreadable files
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
                 pass
 
     github_output = os.environ.get("GITHUB_OUTPUT")

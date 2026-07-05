@@ -2,6 +2,7 @@ import os
 import sys
 import joblib
 from pathlib import Path
+from scipy.sparse import hstack, csr_matrix
 
 def main():
     model_path = Path("models/best_language_classifier.joblib")
@@ -10,9 +11,13 @@ def main():
         print(f"Model not found at {model_path}")
         sys.exit(1)
 
-    # 1. Load the ML model
-    print("Loading language classifier model...")
-    model = joblib.load(model_path)
+    # 1. Load the ML model bundle
+    print("Loading language classifier bundle...")
+    bundle = joblib.load(model_path)
+    model = bundle['model']
+    tfidf_char = bundle['tfidf_char']
+    tfidf_word = bundle['tfidf_word']
+    class_names = bundle['class_names']
     
     python_detected = False
     other_language_detected = False
@@ -26,9 +31,19 @@ def main():
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
                 
-                # IMPORTANT: If your language_classification.ipynb used any text preprocessing
-                # (like removing special characters), apply it to 'content' here before predicting.
-                prediction = model.predict([content])[0]
+                # IMPORTANT: Preprocess and predict exactly like the notebook demo
+                lines = len(content.splitlines())
+                # Note: The notebook expected function names. For full files, we just use filename + content.
+                combined = file_path.name.lower() + '  ' + content
+                
+                x_char = tfidf_char.transform([combined])
+                x_word = tfidf_word.transform([combined])
+                x_lines = csr_matrix([[float(lines)]])
+                
+                X = hstack([x_char, x_word, x_lines])
+                
+                pred_label = model.predict(X)[0]
+                prediction = class_names[pred_label]
                 
                 if str(prediction).lower() == "python":
                     python_detected = True

@@ -61,3 +61,54 @@ def process_new_user_registration_and_setup_account_profile(registration_data: d
             return {"status": "failed", "reason": "Missing or short username", "user_id": None}
     else:
         return {"status": "failed", "reason": "Registration payload is null", "user_id": None}
+
+
+def p_chk(d: dict, u_i: str, is_p: bool, p_c: str | None = None) -> dict:
+    """Process checkout."""
+    if d is not None:
+        if u_i != "":
+            if "items" in d:
+                itms = d["items"]
+                if len(itms) > 0:
+                    tot = 0.0
+                    for i in itms:
+                        if "price" in i and "qty" in i:
+                            p = i["price"]
+                            q = i["qty"]
+                            if p > 0 and q > 0:
+                                if q > 10:
+                                    # 10% bulk discount
+                                    tot = tot + ((p * q) * 0.90)
+                                else:
+                                    tot = tot + (p * q)
+                            else:
+                                return {"s": False, "msg": "Invalid price/qty"}
+                        else:
+                            return {"s": False, "msg": "Missing price or qty"}
+                    
+                    if is_p:
+                        # Premium users get 15% off the whole order
+                        tot = tot * 0.85
+                    
+                    if p_c == "SUMMER2024":
+                        if tot > 50.00:
+                            tot = tot - 15.00
+                        else:
+                            tot = tot - 5.00
+                            
+                    # Add $5.99 shipping if under $25, otherwise free
+                    if tot < 25.00:
+                        tot = tot + 5.99
+                        
+                    # Add 8.25% tax
+                    tot = tot + (tot * 0.0825)
+                    
+                    return {"s": True, "msg": "Success", "total": round(tot, 2)}
+                else:
+                    return {"s": False, "msg": "Cart is empty"}
+            else:
+                return {"s": False, "msg": "No items provided"}
+        else:
+            return {"s": False, "msg": "Invalid user ID"}
+    else:
+        return {"s": False, "msg": "No data"}

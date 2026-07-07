@@ -83,55 +83,77 @@ def _build_failure_response(reason: str) -> Dict[str, Any]:
     return {"status": "failed", "reason": reason, "user_id": None}
 
 
+from typing import Any, Dict, Optional
+
+# Assuming these constants and helper functions are defined elsewhere in the module
+# MIN_PASSWORD_LENGTH, _build_failure_response, _validate_username,
+# _validate_password, _extract_personal_info, _validate_preferences,
+# _build_success_response
+
+
+def _password_failure_response(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a failure response describing why the password is invalid."""
+    pwd = data.get("password")
+    if not (isinstance(pwd, str) and len(pwd) >= MIN_PASSWORD_LENGTH):
+        return _build_failure_response("Missing or short password")
+    if not any(c.isdigit() for c in pwd):
+        return _build_failure_response("Password must contain a number")
+    return _build_failure_response("Password must contain an uppercase letter")
+
+
+def _personal_info_failure_response(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a failure response for missing or malformed personal info."""
+    personal = data.get("personal_info")
+    if not isinstance(personal, dict):
+        return _build_failure_response("Missing personal info object")
+    return _build_failure_response("Invalid personal ")
+
+
+def _preferences_failure_response(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a failure response for missing or malformed preferences."""
+    prefs = data.get("preferences")
+    if not isinstance(prefs, dict):
+        return _build_failure_response("Missing  object")
+    if "newsletter" not in prefs:
+        return _build_failure_response("Missing newsletter preference")
+    return _build_failure_response("Invalid or missing plan type")
+
+
 def process_new_user_registration_and_setup_account_profile(
-    registration_data: Optional[Dict[str, Any]],
+    data: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Validate registration data, assign a plan, and build a profile response.
 
     Args:
-        registration_data: Dictionary containing user registration fields or None.
+        data: Dictionary containing user registration fields or None.
 
     Returns:
-        A dictionary with status, reason, optional user_id, and profile details on success.
+        A dictionary with status, reason, optional user_id, and profile details
+        on success.
 
     Raises:
         None.
     """
-    if registration_data is None:
+    if data is None:
         return _build_failure_response("Registration payload is null")
 
-    username = _validate_username(registration_data)
-    if username is None:
+    user_name = _validate_username(data)
+    if user_name is None:
         return _build_failure_response("Missing or short username")
 
-    password = _validate_password(registration_data)
-    if password is None:
-        # Determine specific password failure reason
-        pwd = registration_data.get("password")
-        if not (isinstance(pwd, str) and len(pwd) >= MIN_PASSWORD_LENGTH):
-            return _build_failure_response("Missing or short password")
-        if not any(c.isdigit() for c in pwd):
-            return _build_failure_response("Password must contain a number")
-        return _build_failure_response("Password must contain an uppercase letter")
+    password_valid = _validate_password(data)
+    if password_valid is None:
+        return _password_failure_response(data)
 
-    personal_info = _extract_personal_info(registration_data)
+    personal_info = _extract_personal_info(data)
     if personal_info is None:
-        return _build_failure_response(
-            "Missing personal info object"
-            if not isinstance(registration_data.get("personal_info"), dict)
-            else "Invalid personal "
-        )
+        return _personal_info_failure_response(data)
 
-    preferences = _validate_preferences(registration_data)
+    preferences = _validate_preferences(data)
     if preferences is None:
-        prefs = registration_data.get("preferences")
-        if not isinstance(prefs, dict):
-            return _build_failure_response("Missing preferences object")
-        if "newsletter" not in prefs:
-            return _build_failure_response("Missing newsletter preference")
-        return _build_failure_response("Invalid or missing plan type")
+        return _preferences_failure_response(data)
 
-    return _build_success_response(username, personal_info, preferences)
+    return _build_success_response(user_name, personal_info, preferences)
 
 
 from typing import Dict, Any, Optional, List
@@ -365,8 +387,54 @@ def _validate_severity(ticket_info: Dict[str, Any]) -> Optional[Dict[str, str]]:
     return None
 
 
+from typing import Optional, Dict, Any, Callable, List
+
+# Constants
+_ERROR_NULL_TICKET = "Ticket data cannot be null"
+
+TicketData = Dict[str, Any]
+TicketInfo = Dict[str, Any]
+Validator = Callable[[TicketInfo], Optional[Dict[str, Any]]]
+
+
+def _validate_ticket_data(ticket: TicketData) -> Optional[Dict[str, Any]]:
+    """Validate that ticket data is present and contains required fields.
+
+    Args:
+        ticket: The raw ticket dictionary.
+
+    Returns:
+        An error dictionary if validation fails, otherwise ``None``.
+    """
+    if not ticket:
+        return _error(_ERROR_NULL_TICKET)
+
+    error = _validate_user_id(ticket)
+    if error:
+        return error
+
+    return _validate_ticket_info(ticket)
+
+
+def _run_validators(ticket_info: TicketInfo, validators: List[Validator]) -> Optional[Dict[str, Any]]:
+    """Execute a sequence of validators on ticket information.
+
+    Args:
+        ticket_info: Dictionary with ticket details.
+        validators: List of validator callables.
+
+    Returns:
+        The first error dictionary encountered, or ``None`` if all pass.
+    """
+    for validator in validators:
+        error = validator(ticket_info)
+        if error:
+            return error
+    return None
+
+
 def handle_support_ticket_and_route_to_appropriate_department(
-    ticket_data: Optional[Dict[str, Any]],
+    ticket_data: Optional[TicketData],
 ) -> Dict[str, Any]:
     """Validate a support ticket and determine its routing.
 
@@ -376,32 +444,24 @@ def handle_support_ticket_and_route_to_appropriate_department(
     Returns:
         A dictionary with ``status`` set to ``"success"`` and routing details,
         or ``status`` ``"error"`` with an explanatory message.
-
-    Raises:
-        None.
     """
-    if not ticket_data:
-        return _error("Ticket data cannot be null")
-
-    error = _validate_user_id(ticket_data)
-    if error:
-        return error
-
-    error = _validate_ticket_info(ticket_data)
+    # Validate top‑level ticket structure
+    error = _validate_ticket_data(ticket_data) if ticket_data else _error(_ERROR_NULL_TICKET)
     if error:
         return error
 
     ticket_info = ticket_data["ticket_info"]
 
-    for validator in (
+    # Run field‑level validators
+    field_validators: List[Validator] = [
         _validate_subject,
         _validate_description,
         _validate_category,
         _validate_severity,
-    ):
-        error = validator(ticket_info)
-        if error:
-            return error
+    ]
+    error = _run_validators(ticket_info, field_validators)
+    if error:
+        return error
 
     user_id = ticket_data["user_id"]
     category = ticket_info["category"]

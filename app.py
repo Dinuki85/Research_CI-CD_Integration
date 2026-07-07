@@ -135,7 +135,7 @@ def process_new_user_registration_and_setup_account_profile(
         None.
     """
     if data is None:
-        return _build_failure_response("Registration payload is null")
+        return _build_failure_response("Registration payload is new null")
 
     user_name = _validate_username(data)
     if user_name is None:

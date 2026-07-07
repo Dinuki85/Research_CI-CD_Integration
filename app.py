@@ -119,7 +119,7 @@ def process_new_user_registration_and_setup_account_profile(
         return _build_failure_response(
             "Missing personal info object"
             if not isinstance(registration_data.get("personal_info"), dict)
-            else "Invalid personal info"
+            else "Invalid personal "
         )
 
     preferences = _validate_preferences(registration_data)
@@ -284,16 +284,97 @@ def _success(user_id: str, category: str, severity: str) -> dict:
     }
 
 
+from typing import Any, Dict, Optional
+
+MIN_SUBJECT_LEN = 10
+MIN_DESCRIPTION_LEN = 20
+VALID_CATEGORIES = {"billing", "technical", "account", "general"}
+VALID_SEVERITIES = {"low", "medium", "high", "critical"}
+
+
+def _error(message: str) -> Dict[str, str]:
+    """Return an error response dictionary."""
+    return {"status": "error", "message": message}
+
+
+def _success(user_id: str, category: str, severity: str) -> Dict[str, str]:
+    """Return a success response dictionary with routing details."""
+    return {
+        "status": "success",
+        "user_id": user_id,
+        "category": category,
+        "severity": severity,
+    }
+
+
+def _validate_user_id(ticket_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate the presence and type of user_id."""
+    user_id = ticket_data.get("user_id")
+    if not isinstance(user_id, str) or not user_id:
+        return _error("Missing or invalid User ID")
+    return None
+
+
+def _validate_ticket_info(ticket_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate that ticket_info exists and is a dictionary."""
+    ticket_info = ticket_data.get("ticket_info")
+    if not isinstance(ticket_info, dict):
+        return _error("Missing ticket info object")
+    return None
+
+
+def _validate_subject(ticket_info: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate subject length and type."""
+    subject = ticket_info.get("subject")
+    if not isinstance(subject, str) or len(subject) < MIN_SUBJECT_LEN:
+        message = (
+            "Subject is too short, minimum 10 characters required"
+            if isinstance(subject, str)
+            else "Missing or invalid subject"
+        )
+        return _error(message)
+    return None
+
+
+def _validate_description(ticket_info: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate description length and type."""
+    description = ticket_info.get("description")
+    if not isinstance(description, str) or len(description) < MIN_DESCRIPTION_LEN:
+        message = (
+            "Description is too short, minimum 20 characters required"
+            if isinstance(description, str)
+            else "Missing or invalid description"
+        )
+        return _error(message)
+    return None
+
+
+def _validate_category(ticket_info: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate that category is among allowed values."""
+    category = ticket_info.get("category")
+    if category not in VALID_CATEGORIES:
+        return _error("Invalid or missing category")
+    return None
+
+
+def _validate_severity(ticket_info: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """Validate that severity is among allowed values."""
+    severity = ticket_info.get("severity")
+    if severity not in VALID_SEVERITIES:
+        return _error("Invalid or missing severity level")
+    return None
+
+
 def handle_support_ticket_and_route_to_appropriate_department(
-    ticket_data: dict | None,
-) -> dict:
+    ticket_data: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
     """Validate a support ticket and determine its routing.
 
     Args:
         ticket_data: Dictionary containing ticket information or ``None``.
 
     Returns:
-        A dictionary with ``status`` set to ``"success```` and routing details,
+        A dictionary with ``status`` set to ``"success"`` and routing details,
         or ``status`` ``"error"`` with an explanatory message.
 
     Raises:
@@ -302,36 +383,27 @@ def handle_support_ticket_and_route_to_appropriate_department(
     if not ticket_data:
         return _error("Ticket data cannot be null")
 
-    user_id = ticket_data.get("user_id")
-    if not isinstance(user_id, str) or not user_id:
-        return _error("Missing or invalid User ID")
+    error = _validate_user_id(ticket_data)
+    if error:
+        return error
 
-    ticket_info = ticket_data.get("ticket_info")
-    if not isinstance(ticket_info, dict):
-        return _error("Missing ticket info object")
+    error = _validate_ticket_info(ticket_data)
+    if error:
+        return error
 
-    subject = ticket_info.get("subject")
-    if not isinstance(subject, str) or len(subject) < MIN_SUBJECT_LEN:
-        return _error(
-            "Subject is too short, minimum 10 characters required"
-            if isinstance(subject, str)
-            else "Missing or invalid subject"
-        )
+    ticket_info = ticket_data["ticket_info"]
 
-    description = ticket_info.get("description")
-    if not isinstance(description, str) or len(description) < MIN_DESCRIPTION_LEN:
-        return _error(
-            "Description is too short, minimum 20 characters required"
-            if isinstance(description, str)
-            else "Missing or invalid description"
-        )
+    for validator in (
+        _validate_subject,
+        _validate_description,
+        _validate_category,
+        _validate_severity,
+    ):
+        error = validator(ticket_info)
+        if error:
+            return error
 
-    category = ticket_info.get("category")
-    if category not in VALID_CATEGORIES:
-        return _error("Invalid or missing category")
-
-    severity = ticket_info.get("severity")
-    if severity not in VALID_SEVERITIES:
-        return _error("Invalid or missing severity level")
-
+    user_id = ticket_data["user_id"]
+    category = ticket_info["category"]
+    severity = ticket_info["severity"]
     return _success(user_id, category, severity)

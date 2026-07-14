@@ -1,0 +1,13 @@
+app.py
+cli.py
+src\code_smell_detector.py
+src\generate_pr_summary.py
+src\language_detection.py
+src\llm_recommender.py
+src\print_refactor_results.py
+src\print_smell_report.py
+src\refactoring_engine.py
+src\repo_analyzer.py
+src\setup_hooks.py
+src\train_smell_model.py
+src\__init__.py

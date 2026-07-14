@@ -348,5 +348,65 @@
         "composite": 8.92
       }
     ]
+  },
+  {
+    "name": "generate_annual_compliance_and_audit_report",
+    "full_name": "generate_annual_compliance_and_audit_report",
+    "file": "app.py",
+    "start_line": 304,
+    "num_lines": 106,
+    "is_bad_smell": true,
+    "smell_probability": 0.9999999831006218,
+    "smell_details": {
+      "long_method": 1,
+      "long_param_list": 0,
+      "deep_nesting": 1,
+      "magic_numbers": 1,
+      "no_docstring": 1,
+      "no_type_hints": 0,
+      "long_lines": 1,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": "GPT-OSS 120B",
+    "refactored": true,
+    "refactor_error": null,
+    "llm_ranking": [
+      {
+        "model": "GPT-OSS 120B",
+        "quality": 2.025824713106419,
+        "time_ms": 30511,
+        "cost": 0.00054357,
+        "composite": 85.69267662792842
+      },
+      {
+        "model": "Gemini Flash",
+        "quality": 2.0247019866993066,
+        "time_ms": 30511,
+        "cost": 0.0054357,
+        "composite": 72.09253577451459
+      },
+      {
+        "model": "Gemini 3.1 Pro",
+        "quality": 2.023579260292194,
+        "time_ms": 30511,
+        "cost": 0.036238,
+        "composite": 52.66572299374275
+      },
+      {
+        "model": "Claude Sonnet 4.6",
+        "quality": 2.022456533885081,
+        "time_ms": 25841,
+        "cost": 0.053607,
+        "composite": 50.56711040683531
+      },
+      {
+        "model": "Claude Opus",
+        "quality": 2.0213338074779688,
+        "time_ms": 47525,
+        "cost": 0.08948,
+        "composite": 8.92
+      }
+    ]
   }
 ]

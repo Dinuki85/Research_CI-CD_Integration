@@ -3,7 +3,7 @@
     "name": "fetch_user_events",
     "full_name": "DataWarehouseClient.fetch_user_events",
     "file": "app.py",
-    "start_line": 9,
+    "start_line": 8,
     "num_lines": 1,
     "is_bad_smell": false,
     "smell_probability": 0.004619694381646001,
@@ -26,7 +26,7 @@
     "name": "fetch_billing_history",
     "full_name": "DataWarehouseClient.fetch_billing_history",
     "file": "app.py",
-    "start_line": 10,
+    "start_line": 9,
     "num_lines": 1,
     "is_bad_smell": false,
     "smell_probability": 0.0016687753549406896,
@@ -49,7 +49,7 @@
     "name": "predict_churn_probability",
     "full_name": "MachineLearningService.predict_churn_probability",
     "file": "app.py",
-    "start_line": 13,
+    "start_line": 12,
     "num_lines": 1,
     "is_bad_smell": false,
     "smell_probability": 0.0026001685432002434,
@@ -72,10 +72,10 @@
     "name": "aggregate_and_analyze_user_data",
     "full_name": "aggregate_and_analyze_user_data",
     "file": "app.py",
-    "start_line": 15,
+    "start_line": 14,
     "num_lines": 131,
     "is_bad_smell": true,
-    "smell_probability": 0.9999999898094073,
+    "smell_probability": 0.9999999963782022,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -93,35 +93,35 @@
     "llm_ranking": [
       {
         "model": "GPT-OSS 120B",
-        "quality": 3.0198216726810845,
+        "quality": 3.0186638738602722,
         "time_ms": 30511,
         "cost": 0.00054357,
         "composite": 85.69267662792842
       },
       {
         "model": "Gemini Flash",
-        "quality": 3.018698946273972,
+        "quality": 3.01754114745316,
         "time_ms": 30511,
         "cost": 0.0054357,
         "composite": 72.09253577451459
       },
       {
         "model": "Gemini 3.1 Pro",
-        "quality": 3.0175762198668594,
+        "quality": 3.016418421046047,
         "time_ms": 30511,
         "cost": 0.036238,
         "composite": 52.66572299374275
       },
       {
         "model": "Claude Sonnet 4.6",
-        "quality": 3.016453493459747,
+        "quality": 3.015295694638935,
         "time_ms": 25841,
         "cost": 0.053607,
         "composite": 50.56711040684026
       },
       {
         "model": "Claude Opus",
-        "quality": 3.0153307670526344,
+        "quality": 3.014172968231822,
         "time_ms": 47525,
         "cost": 0.08948,
         "composite": 8.92

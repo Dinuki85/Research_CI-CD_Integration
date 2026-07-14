@@ -216,3 +216,87 @@ def aggregate_and_analyze_user_data(
         profile["errors"].append("Critical internal error occurred")
 
     return profile
+
+def process_monthly_invoices_and_generate_reports(
+    user_ids: List[str],
+    dw_client: "DataWarehouseClient",
+    current_month: str,
+    send_emails: bool = False,
+    apply_discounts: bool = True
+) -> Dict[str, Any]:
+    logger.info("Starting monthly invoice processing...")
+    results = {"successful_users": [], "failed_users": [], "total_revenue": 0.0, "total_discounts": 0.0}
+    
+    for user_id in user_ids:
+        try:
+            raw_billing_events = dw_client.fetch_billing_history(user_id=user_id)
+            if not raw_billing_events:
+                logger.warning(f"No billing events found for user {user_id}")
+                results["failed_users"].append({"user_id": user_id, "reason": "No billing data"})
+                continue
+                
+            user_total_spent = 0.0
+            user_discount_applied = 0.0
+            late_fees = 0.0
+            
+            for event in raw_billing_events:
+                event_date = event.get("timestamp", "")
+                if event_date.startswith(current_month):
+                    amount = float(event.get("amount", 0))
+                    status = event.get("status", "pending")
+                    
+                    if status == "paid":
+                        user_total_spent += amount
+                    elif status == "late":
+                        late_fees += amount * 0.05
+                        user_total_spent += amount + late_fees
+                    elif status == "refunded":
+                        user_total_spent -= amount
+                        
+            if apply_discounts and user_total_spent > 1000.0:
+                discount = user_total_spent * 0.10
+                user_discount_applied += discount
+                user_total_spent -= discount
+            elif apply_discounts and user_total_spent > 500.0:
+                discount = user_total_spent * 0.05
+                user_discount_applied += discount
+                user_total_spent -= discount
+                
+            tax_rate = 0.08
+            if raw_billing_events[0].get("region") == "EU":
+                tax_rate = 0.20
+            elif raw_billing_events[0].get("region") == "UK":
+                tax_rate = 0.22
+                
+            tax_amount = user_total_spent * tax_rate
+            final_amount_due = user_total_spent + tax_amount
+            
+            results["total_revenue"] += final_amount_due
+            results["total_discounts"] += user_discount_applied
+            
+            invoice_record = {
+                "user_id": user_id,
+                "month": current_month,
+                "base_amount": round(user_total_spent + user_discount_applied, 2),
+                "discount": round(user_discount_applied, 2),
+                "late_fees": round(late_fees, 2),
+                "tax": round(tax_amount, 2),
+                "final_amount": round(final_amount_due, 2)
+            }
+            
+            if send_emails:
+                email_body = f"Dear User {user_id},\nYour invoice for {current_month} is ready. Total due: ${round(final_amount_due, 2)}.\n"
+                if user_discount_applied > 0:
+                    email_body += f"You received a discount of ${round(user_discount_applied, 2)}!\n"
+                if late_fees > 0:
+                    email_body += f"Please note that a late fee of ${round(late_fees, 2)} was applied.\n"
+                logger.info(f"Sending email to user {user_id}: {email_body}")
+                
+            results["successful_users"].append(invoice_record)
+            
+        except Exception as e:
+            logger.error(f"Error processing invoice for user {user_id}: {e}")
+            results["failed_users"].append({"user_id": user_id, "reason": str(e)})
+            
+    logger.info(f"Finished processing. Total Revenue: ${results['total_revenue']}. Total Discounts: ${results['total_discounts']}")
+    return results

@@ -103,14 +103,14 @@ else
                 exec < /dev/tty
                 read -p "Do you want to accept these AI refactoring changes? (y/n) " accept
                 
-                # Strip any spaces, tabs, and carriage returns (Windows/Git Bash fix)
-                accept="${accept//[[:space:]]/}"
+                # Strip any spaces, tabs, and carriage returns
+                accept=$(echo "$accept" | tr -d '[:space:]' | tr -d '\r')
                 
-                if [ "$accept" = "y" ] || [ "$accept" = "Y" ]; then
+                if [[ "$accept" =~ ^[Yy] ]]; then
                     git add "$PROJECT_ROOT/$f"
                     echo "[CodeRefactor AI] Changes accepted and staged: $f"
                 else
-                    echo "[CodeRefactor AI] Changes rejected for $f. Reverting to pre-refactor state..."
+                    echo "[CodeRefactor AI] Changes rejected for $f. Reverting to pre-refactor state... (input was: '$accept')"
                     git checkout "$PROJECT_ROOT/$f"
                     echo "[CodeRefactor AI] Proceeding with commit using the original code."
                     # exit 1  <-- Delete this or put a # in front of it!

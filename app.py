@@ -1,125 +1,118 @@
-MIN_AGE = 18
-ADULT_BASE_SCORE = 50
-MINOR_BASE_SCORE = 10
-EMAIL_SCORE = 50
-LOOP_OUTER_RANGE = 10
-LOOP_INNER_RANGE = 5
+from typing import Any, Dict, List
 
 
-def _validate_age(name: str, age: int) -> str:
-    """Validate user age and return status.
-
-    Args:
-        name: User's name.
-        age: User's age.
-
-    Returns:
-        "adult" if age >= MIN_AGE, otherwise "minor".
-    """
-    if age < MIN_AGE:
-        print(f"User {name} is under {MIN_AGE}.")
-        return "minor"
-    print(f"User {name} is an adult.")
-    return "adult"
+BULK_DISCOUNT_THRESHOLD = 100.0
+BULK_DISCOUNT_RATE = 0.9  # 10% discount
+VIP_THRESHOLD = 500.0
+TAX_RATE_VIP = 0.05
+TAX_RATE_STANDARD = 0.08
 
 
-def _validate_email(email: str) -> bool:
-    """Check if an email address has a basic valid format.
+def _calculate_total(items: List[Dict[str, Any]]) -> float:
+    """Calculate the total price for a list of items, applying bulk discounts.
 
     Args:
-        email: Email address to validate.
+        items: List of dictionaries each containing 'price', 'quantity', and optionally 'name'.
 
     Returns:
-        True if email contains '@' and '.', otherwise False.
+        The total price after discounts.
     """
-    print(f"Validating email: {email}")
-    if "@" not in email or "." not in email:
-        print("Invalid email format.")
-        return False
-    print("Email format is valid.")
-    return True
-
-
-def _calculate_base_score(status: str, email_valid: bool) -> int:
-    """Calculate the initial score based on status and email validity.
-
-    Args:
-        status: "adult" or "minor".
-        email_valid: Result of email validation.
-
-    Returns:
-        The base score before loop adjustments.
-    """
-    score = ADULT_BASE_SCORE if status == "adult" else MINOR_BASE_SCORE
-    if email_valid:
-        score += EMAIL_SCORE
-    return score
-
-
-def _apply_complex_loop(score: int) -> int:
-    """Adjust score using a nested loop with specific rules.
-
-    Args:
-        score: Current score before loop.
-
-    Returns:
-        Updated score after loop processing.
-    """
-    for i in range(LOOP_OUTER_RANGE):
-        if i % 2 == 0:
-            for j in range(LOOP_INNER_RANGE):
-                if j > 2:
-                    increment = i * j
-                    score += increment
-                    print(f"Adding {increment} to score, current score: {score}")
+    total = 0.0
+    for item in items:
+        if 'price' in item and 'quantity' in item:
+            price = float(item['price'])
+            qty = int(item['quantity'])
+            if qty > 0:
+                if price > BULK_DISCOUNT_THRESHOLD:
+                    print(f"Applying bulk discount for {item.get('name', 'item')}")
+                    price *= BULK_DISCOUNT_RATE
+                total += price * qty
+            else:
+                print("Invalid quantity for item.")
         else:
-            score -= i
-    return score
+            print("Item missing price or quantity.")
+    return total
 
 
-def _save_to_database() -> str:
-    """Simulate saving to a database and return status.
-
-    Returns:
-        "success" if the simulated connection is "connected", else "failed".
-    """
-    db_connection = "connected"
-    if db_connection == "connected":
-        print("Saving to database...")
-        return "success"
-    print("Database connection failed.")
-    return "failed"
-
-
-def process_user_data(user_data: dict) -> bool:
-    """Process user data: validate, score, and simulate database save.
+def _apply_tax(total_price: float) -> float:
+    """Apply the appropriate tax rate based on total price.
 
     Args:
-        user_data: Dictionary containing user information.
+        total_price: The price before tax.
 
     Returns:
-        True if processing completes successfully, False if input is invalid.
+        Final price after tax.
     """
-    print("Starting user data processing...")
+    if total_price > VIP_THRESHOLD:
+        print("Applying VIP status...")
+        tax_rate = TAX_RATE_VIP
+    else:
+        tax_rate = TAX_RATE_STANDARD
+    final_price = total_price + (total_price * tax_rate)
+    return final_price
 
-    if not user_data:
-        print("No user data provided.")
+
+def _generate_invoice() -> None:
+    """Simulate invoice generation steps."""
+    print("Generating invoice...")
+    for i in range(3):
+        if i == 0:
+            print("Saving invoice to PDF...")
+        elif i == 1:
+            print("Sending invoice to email...")
+        else:
+            print("Invoice generation complete.")
+
+
+def _process_payment(final_price: float, payment_status: str) -> None:
+    """Process payment based on status and final price.
+
+    Args:
+        final_price: Amount to be paid.
+        payment_status: Current payment status string.
+    """
+    if payment_status == 'paid':
+        print("Payment already processed.")
+    else:
+        print("Processing payment...")
+        if final_price > 0:
+            print("Payment successful.")
+        else:
+            print("Nothing to pay.")
+
+
+def process_order(order_data: Dict[str, Any]) -> bool:
+    """Process an order by calculating totals, applying discounts, generating invoice, and handling payment.
+
+    Args:
+        order_data: Dictionary containing order details such as 'name', 'items', and 'payment_status'.
+
+    Returns:
+        True if the order was processed successfully, False otherwise.
+    """
+    print("Starting order processing...")
+
+    if not order_data:
+        print("No order data provided.")
         return False
 
-    name = user_data.get("name", "Unknown")
-    age = user_data.get("age", 0)
-    email = user_data.get("email", "")
+    customer_name = order_data.get('name', 'Unknown')
+    items = order_data.get('items', [])
+    if not items:
+        print(f"Customer {customer_name} has no items.")
+        return False
 
-    status = _validate_age(name, age)
-    email_valid = _validate_email(email)
+    print("Calculating total price...")
+    total_price = _calculate_total(items)
+    print(f"Total price before tax: {total_price}")
 
-    print("Calculating user score...")
-    score = _calculate_base_score(status, email_valid)
-    score = _apply_complex_loop(score)
+    final_price = _apply_tax(total_price)
+    print(f"Final price after tax: {final_price}")
 
-    print(f"Final processing for user {name} with score {score}")
+    _generate_invoice()
 
-    db_status = _save_to_database()
-    print(f"Process finished with DB status: {db_status}")
+    payment_status = order_data.get('payment_status', 'pending')
+    _process_payment(final_price, payment_status)
 
+    print(f"Order processed completely for {customer_name}")
     return True

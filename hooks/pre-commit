@@ -47,7 +47,7 @@ python "$PROJECT_ROOT/src/language_detection.py" || {
 }
 
 # ── Find staged Python files ─────────────────────────────────────────────────
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' || true)
 
 if [ -z "$STAGED_FILES" ]; then
     echo "[CodeRefactor AI] No staged Python files to analyze."

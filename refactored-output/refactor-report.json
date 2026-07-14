@@ -1,12 +1,12 @@
 [
   {
-    "name": "main",
-    "full_name": "main",
-    "file": "src\\language_detection.py",
-    "start_line": 6,
-    "num_lines": 54,
+    "name": "process_user_data",
+    "full_name": "process_user_data",
+    "file": "app.py",
+    "start_line": 1,
+    "num_lines": 64,
     "is_bad_smell": true,
-    "smell_probability": 0.9905622818221356,
+    "smell_probability": 0.9999999201657781,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
@@ -14,48 +14,48 @@
       "magic_numbers": 1,
       "no_docstring": 1,
       "no_type_hints": 1,
-      "long_lines": 1,
+      "long_lines": 0,
       "commented_code": 0,
       "poor_naming": 0
     },
     "best_llm": "GPT-OSS 120B",
-    "refactored": false,
-    "refactor_error": "HTTP 402: {\"error\":{\"message\":\"Insufficient credits. Add more using https://openrouter.ai/settings/credits\",\"code\":402}}",
+    "refactored": true,
+    "refactor_error": null,
     "llm_ranking": [
       {
         "model": "GPT-OSS 120B",
-        "quality": 1.0192582284429208,
-        "time_ms": 2000,
-        "cost": 1.4999999999999999e-05,
-        "composite": 85.0
+        "quality": 1.0175699052807183,
+        "time_ms": 30478,
+        "cost": 0.0005528699999999999,
+        "composite": 85.66389366547381
       },
       {
         "model": "Gemini Flash",
-        "quality": 1.0181355020358083,
-        "time_ms": 2000,
-        "cost": 0.00015,
-        "composite": 71.41348088531187
+        "quality": 1.0164471788736058,
+        "time_ms": 30478,
+        "cost": 0.0055287,
+        "composite": 72.06234115614069
       },
       {
         "model": "Gemini 3.1 Pro",
-        "quality": 1.0170127756286957,
-        "time_ms": 2000,
-        "cost": 0.001,
-        "composite": 52.07243460764588
+        "quality": 1.0153244524664933,
+        "time_ms": 30478,
+        "cost": 0.036857999999999995,
+        "composite": 52.62664017145059
       },
       {
         "model": "Claude Sonnet 4.6",
-        "quality": 1.0158900492215832,
-        "time_ms": 2000,
-        "cost": 0.0015,
-        "composite": 35.54828973843059
+        "quality": 1.0142017260593807,
+        "time_ms": 25813,
+        "cost": 0.054456000000000004,
+        "composite": 50.56688972243626
       },
       {
         "model": "Claude Opus",
-        "quality": 1.0147673228144707,
-        "time_ms": 2000,
-        "cost": 0.0025,
-        "composite": 15.000000000000002
+        "quality": 1.0130789996522682,
+        "time_ms": 47330,
+        "cost": 0.090895,
+        "composite": 9.025270758122744
       }
     ]
   }

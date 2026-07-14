@@ -103,6 +103,9 @@ else
                 exec < /dev/tty
                 read -p "Do you want to accept these AI refactoring changes? (y/n) " accept
                 
+                # Strip hidden carriage return characters (Windows/Git Bash fix)
+                accept="${accept//$'\r'/}"
+                
                 if [ "$accept" = "y" ] || [ "$accept" = "Y" ]; then
                     git add "$PROJECT_ROOT/$f"
                     echo "[CodeRefactor AI] Changes accepted and staged: $f"

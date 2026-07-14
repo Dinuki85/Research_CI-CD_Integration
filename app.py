@@ -300,3 +300,110 @@ def process_monthly_invoices_and_generate_reports(
             
     logger.info(f"Finished processing. Total Revenue: ${results['total_revenue']}. Total Discounts: ${results['total_discounts']}")
     return results
+
+def generate_annual_compliance_and_audit_report(
+    company_ids: List[str],
+    audit_year: int,
+    dw_client: "DataWarehouseClient",
+    output_format: str = "json"
+) -> Dict[str, Any]:
+    logger.info(f"Starting annual audit report for year {audit_year}")
+    
+    report_data = {
+        "metadata": {
+            "generated_at": datetime.utcnow().isoformat(),
+            "year": audit_year,
+            "total_companies_processed": 0,
+            "overall_compliance_score": 0.0
+        },
+        "companies": [],
+        "errors": []
+    }
+    
+    total_score_accumulator = 0.0
+    companies_processed = 0
+    
+    for comp_id in company_ids:
+        try:
+            logger.debug(f"Fetching events for company {comp_id}")
+            # Re-using the mocked fetch_user_events to simulate fetching company events
+            company_events = dw_client.fetch_user_events(comp_id, 365)
+            
+            if not company_events:
+                report_data["errors"].append(f"No events for company {comp_id}")
+                continue
+                
+            compliance_flags = 0
+            security_breaches = 0
+            data_access_logs = 0
+            unauthorized_attempts = 0
+            
+            for event in company_events:
+                event_type = event.get("type", "")
+                severity = event.get("severity", 1)
+                
+                if event_type == "data_access":
+                    data_access_logs += 1
+                    if not event.get("authorized", False):
+                        unauthorized_attempts += 1
+                        if severity > 3:
+                            security_breaches += 1
+                elif event_type == "policy_update":
+                    compliance_flags += 1
+                elif event_type == "audit_log_deleted":
+                    security_breaches += 2
+                    unauthorized_attempts += 5
+                    
+            base_score = 100.0
+            penalty = (security_breaches * 15.0) + (unauthorized_attempts * 2.5)
+            bonus = compliance_flags * 5.0
+            
+            final_score = base_score - penalty + bonus
+            if final_score > 100.0:
+                final_score = 100.0
+            elif final_score < 0.0:
+                final_score = 0.0
+                
+            status = "COMPLIANT"
+            if final_score < 50.0:
+                status = "NON_COMPLIANT"
+            elif security_breaches > 0:
+                status = "REQUIRES_REVIEW"
+                
+            company_record = {
+                "company_id": comp_id,
+                "metrics": {
+                    "total_access_logs": data_access_logs,
+                    "unauthorized_access_attempts": unauthorized_attempts,
+                    "security_breaches": security_breaches,
+                    "policy_updates_made": compliance_flags
+                },
+                "compliance_score": round(final_score, 2),
+                "audit_status": status,
+                "year": audit_year
+            }
+            
+            if output_format == "csv":
+                # Simulated CSV formatting logic embedded inside the loop
+                csv_row = f"{comp_id},{data_access_logs},{unauthorized_attempts},{security_breaches},{compliance_flags},{round(final_score, 2)},{status}"
+                company_record["csv_export"] = csv_row
+                
+            elif output_format == "pdf":
+                # Simulated PDF generation logic embedded inside the loop
+                pdf_text = f"Audit Report for {comp_id}\nYear: {audit_year}\nStatus: {status}\nScore: {round(final_score, 2)}\n"
+                pdf_text += f"Breaches: {security_breaches}\nUnauthorized: {unauthorized_attempts}"
+                company_record["pdf_export"] = pdf_text
+                
+            report_data["companies"].append(company_record)
+            total_score_accumulator += final_score
+            companies_processed += 1
+            
+        except Exception as ex:
+            logger.error(f"Error auditing company {comp_id}: {ex}")
+            report_data["errors"].append(f"Failed to process {comp_id}: {str(ex)}")
+            
+    if companies_processed > 0:
+        report_data["metadata"]["total_companies_processed"] = companies_processed
+        report_data["metadata"]["overall_compliance_score"] = round(total_score_accumulator / companies_processed, 2)
+        
+    return report_data

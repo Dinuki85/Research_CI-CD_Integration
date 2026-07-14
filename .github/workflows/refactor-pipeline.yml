@@ -89,11 +89,11 @@ jobs:
             if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
               # PR mode: diff against base branch
               BASE="${{ github.event.pull_request.base.sha }}"
-              CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' || true)
+              CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' | grep -v '_pycache' || true)
             fi
             if [ -z "$CHANGED" ]; then
               # Fallback: diff against parent commit (push mode)
-              CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD 2>/dev/null | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' || true)
+              CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD 2>/dev/null | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' | grep -v '_pycache' || true)
             fi
             if [ -z "$CHANGED" ]; then
               echo "No changed Python files detected via git diff. Falling back to full repo scan."
@@ -229,10 +229,10 @@ jobs:
             CHANGED=""
             if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
               BASE="${{ github.event.pull_request.base.sha }}"
-              CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' || true)
+              CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' | grep -v '_pycache' || true)
             fi
             if [ -z "$CHANGED" ]; then
-              CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD 2>/dev/null | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' || true)
+              CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD 2>/dev/null | grep '\.py$' | grep -v '^src/' | grep -v '^cli\.py$' | grep -v '_pycache' || true)
             fi
             if [ -n "$CHANGED" ]; then
               # Write absolute paths

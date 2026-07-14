@@ -6,7 +6,7 @@
     "start_line": 6,
     "num_lines": 133,
     "is_bad_smell": true,
-    "smell_probability": 0.9999999996947295,
+    "smell_probability": 0.9999999996968167,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 1,

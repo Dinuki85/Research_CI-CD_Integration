@@ -1,20 +1,89 @@
 [
   {
-    "name": "process_user_data",
-    "full_name": "process_user_data",
+    "name": "fetch_user_events",
+    "full_name": "DataWarehouseClient.fetch_user_events",
     "file": "app.py",
-    "start_line": 1,
-    "num_lines": 64,
+    "start_line": 9,
+    "num_lines": 1,
+    "is_bad_smell": false,
+    "smell_probability": 0.004619694381646001,
+    "smell_details": {
+      "long_method": 0,
+      "long_param_list": 0,
+      "deep_nesting": 0,
+      "magic_numbers": 0,
+      "no_docstring": 1,
+      "no_type_hints": 0,
+      "long_lines": 1,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
+  },
+  {
+    "name": "fetch_billing_history",
+    "full_name": "DataWarehouseClient.fetch_billing_history",
+    "file": "app.py",
+    "start_line": 10,
+    "num_lines": 1,
+    "is_bad_smell": false,
+    "smell_probability": 0.0016687753549406896,
+    "smell_details": {
+      "long_method": 0,
+      "long_param_list": 0,
+      "deep_nesting": 0,
+      "magic_numbers": 0,
+      "no_docstring": 1,
+      "no_type_hints": 0,
+      "long_lines": 0,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
+  },
+  {
+    "name": "predict_churn_probability",
+    "full_name": "MachineLearningService.predict_churn_probability",
+    "file": "app.py",
+    "start_line": 13,
+    "num_lines": 1,
+    "is_bad_smell": false,
+    "smell_probability": 0.0026001685432002434,
+    "smell_details": {
+      "long_method": 0,
+      "long_param_list": 0,
+      "deep_nesting": 0,
+      "magic_numbers": 0,
+      "no_docstring": 1,
+      "no_type_hints": 0,
+      "long_lines": 0,
+      "commented_code": 0,
+      "poor_naming": 0
+    },
+    "best_llm": null,
+    "refactored": false,
+    "refactor_error": null
+  },
+  {
+    "name": "aggregate_and_analyze_user_data",
+    "full_name": "aggregate_and_analyze_user_data",
+    "file": "app.py",
+    "start_line": 15,
+    "num_lines": 131,
     "is_bad_smell": true,
-    "smell_probability": 0.9999999201657781,
+    "smell_probability": 0.9999999898094073,
     "smell_details": {
       "long_method": 1,
       "long_param_list": 0,
       "deep_nesting": 1,
       "magic_numbers": 1,
-      "no_docstring": 1,
-      "no_type_hints": 1,
-      "long_lines": 0,
+      "no_docstring": 0,
+      "no_type_hints": 0,
+      "long_lines": 1,
       "commented_code": 0,
       "poor_naming": 0
     },
@@ -24,38 +93,38 @@
     "llm_ranking": [
       {
         "model": "GPT-OSS 120B",
-        "quality": 1.0175699052807183,
-        "time_ms": 30478,
-        "cost": 0.0005528699999999999,
-        "composite": 85.66389366547381
+        "quality": 3.0198216726810845,
+        "time_ms": 30511,
+        "cost": 0.00054357,
+        "composite": 85.69267662792842
       },
       {
         "model": "Gemini Flash",
-        "quality": 1.0164471788736058,
-        "time_ms": 30478,
-        "cost": 0.0055287,
-        "composite": 72.06234115614069
+        "quality": 3.018698946273972,
+        "time_ms": 30511,
+        "cost": 0.0054357,
+        "composite": 72.09253577451459
       },
       {
         "model": "Gemini 3.1 Pro",
-        "quality": 1.0153244524664933,
-        "time_ms": 30478,
-        "cost": 0.036857999999999995,
-        "composite": 52.62664017145059
+        "quality": 3.0175762198668594,
+        "time_ms": 30511,
+        "cost": 0.036238,
+        "composite": 52.66572299374275
       },
       {
         "model": "Claude Sonnet 4.6",
-        "quality": 1.0142017260593807,
-        "time_ms": 25813,
-        "cost": 0.054456000000000004,
-        "composite": 50.56688972243626
+        "quality": 3.016453493459747,
+        "time_ms": 25841,
+        "cost": 0.053607,
+        "composite": 50.56711040684026
       },
       {
         "model": "Claude Opus",
-        "quality": 1.0130789996522682,
-        "time_ms": 47330,
-        "cost": 0.090895,
-        "composite": 9.025270758122744
+        "quality": 3.0153307670526344,
+        "time_ms": 47525,
+        "cost": 0.08948,
+        "composite": 8.92
       }
     ]
   }

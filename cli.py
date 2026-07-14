@@ -138,7 +138,7 @@ def print_banner():
     print()
     print(bold(cyan("╔══════════════════════════════════════════════════════════════════╗")))
     print(bold(cyan("║          CodeRefactor AI — Automated Python Refactoring          ║")))
-    print(bold(cyan("║          v{:<73}║".format(__version__))))
+    print(bold(cyan("║          v{:<73}║".format(__version__))))                        
     print(bold(cyan("╚══════════════════════════════════════════════════════════════════╝")))
     print()
 

@@ -1,118 +1,197 @@
-from typing import Any, Dict, List
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, Any, List
+
+# Mock external dependencies for the example
+logger = logging.getLogger(__name__)
+
+class DataWarehouseClient:
+    def fetch_user_events(self, user_id: str, days: int) -> List[Dict]: return []
+    def fetch_billing_history(self, user_id: str) -> List[Dict]: return []
+
+class MachineLearningService:
+    def predict_churn_probability(self, features: Dict) -> float: return 0.15
+
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Set
+
+logger = logging.getLogger(__name__)
+
+DAYS_FOR_TELEMETRY = 30
+MAX_ENGAGEMENT_SCORE = 100.0
+TOP_FEATURE_COUNT = 5
+CHURN_HIGH_THRESHOLD = 0.7
+CHURN_MEDIUM_THRESHOLD = 0.4
+MAX_LATE_PAYMENTS_FOR_GOOD_STANDING = 2
 
 
-BULK_DISCOUNT_THRESHOLD = 100.0
-BULK_DISCOUNT_RATE = 0.9  # 10% discount
-VIP_THRESHOLD = 500.0
-TAX_RATE_VIP = 0.05
-TAX_RATE_STANDARD = 0.08
+def _fetch_events(
+    dw_client: "DataWarehouseClient", user_id: str, days: int = DAYS_FOR_TELEMETRY
+) -> List[Dict[str, Any]]:
+    """Retrieve user events for the given number of days."""
+    try:
+        return dw_client.fetch_user_events(user_id=user_id, days=days)
+    except Exception as exc:
+        logger.error(f"Failed to fetch events for {user_id}: {exc}")
+        return []
 
 
-def _calculate_total(items: List[Dict[str, Any]]) -> float:
-    """Calculate the total price for a list of items, applying bulk discounts.
+def _process_engagement(events: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Calculate engagement metrics from raw events."""
+    total_sessions = 0
+    active_days: Set[str] = set()
+    feature_usage: Dict[str, int] = {}
 
-    Args:
-        items: List of dictionaries each containing 'price', 'quantity', and optionally 'name'.
+    for event in events:
+        event_type = event.get("type")
+        event_date = event.get("timestamp", "").split("T")[0]
 
-    Returns:
-        The total price after discounts.
-    """
-    total = 0.0
-    for item in items:
-        if 'price' in item and 'quantity' in item:
-            price = float(item['price'])
-            qty = int(item['quantity'])
-            if qty > 0:
-                if price > BULK_DISCOUNT_THRESHOLD:
-                    print(f"Applying bulk discount for {item.get('name', 'item')}")
-                    price *= BULK_DISCOUNT_RATE
-                total += price * qty
-            else:
-                print("Invalid quantity for item.")
-        else:
-            print("Item missing price or quantity.")
-    return total
+        if event_type == "session_start":
+            total_sessions += 1
+        elif event_type == "feature_used":
+            feature_name = event.get("metadata", {}).get("feature_name", "unknown")
+            feature_usage[feature_name] = feature_usage.get(feature_name, 0) + 1
+
+        if event_date:
+            active_days.add(event_date)
+
+    engagement_score = min(
+        MAX_ENGAGEMENT_SCORE,
+        (len(active_days) / DAYS_FOR_TELEMETRY) * 100 + (total_sessions * 0.5),
+    )
+
+    top_features = dict(
+        sorted(feature_usage.items(), key=lambda item: item[1], reverse=True)[:TOP_FEATURE_COUNT]
+    )
+
+    return {
+        "total_events_30d": len(events),
+        "unique_active_days_30d": len(active_days),
+        "total_sessions_30d": total_sessions,
+        "top_features": top_features,
+        "engagement_score": engagement_score,
+    }
 
 
-def _apply_tax(total_price: float) -> float:
-    """Apply the appropriate tax rate based on total price.
+def _fetch_billing(dw_client: "DataWarehouseClient", user_id: str) -> Dict[str, Any]:
+    """Retrieve and summarize billing information."""
+    try:
+        records = dw_client.fetch_billing_history(user_id=user_id)
+    except Exception as exc:
+        logger.error(f"Failed to fetch billing for {user_id}: {exc}")
+        return {}
 
-    Args:
-        total_price: The price before tax.
+    total_spent = 0.0
+    late_payments = 0
+    current_plan = "free"
 
-    Returns:
-        Final price after tax.
-    """
-    if total_price > VIP_THRESHOLD:
-        print("Applying VIP status...")
-        tax_rate = TAX_RATE_VIP
+    if records:
+        current_plan = records[0].get("plan_tier", "free")
+        for rec in records:
+            status = rec.get("status")
+            amount = float(rec.get("amount", 0))
+            if status == "paid":
+                total_spent += amount
+            elif status == "late":
+                late_payments += 1
+                total_spent += amount
+
+    return {
+        "lifetime_value": total_spent,
+        "current_plan_tier": current_plan,
+        "delinquency_count": late_payments,
+        "is_in_good_standing": late_payments < MAX_LATE_PAYMENTS_FOR_GOOD_STANDING,
+    }
+
+
+def _run_churn_prediction(
+    ml_service: "MachineLearningService", profile: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Execute churn prediction and return risk assessment."""
+    engagement = profile["engagement_metrics"]
+    financial = profile.get("financial_health", {})
+
+    feature_vector = {
+        "engagement_score": engagement["engagement_score"],
+        "active_days": engagement["unique_active_days_30d"],
+        "late_payments": financial.get("delinquency_count", 0),
+        "is_premium": 1 if financial.get("current_plan_tier") != "free" else 0,
+    }
+
+    churn_prob = ml_service.predict_churn_probability(feature_vector)
+
+    if churn_prob > CHURN_HIGH_THRESHOLD:
+        risk_category = "HIGH"
+    elif churn_prob > CHURN_MEDIUM_THRESHOLD:
+        risk_category = "MEDIUM"
     else:
-        tax_rate = TAX_RATE_STANDARD
-    final_price = total_price + (total_price * tax_rate)
-    return final_price
+        risk_category = "LOW"
+
+    return {
+        "churn_probability": round(churn_prob, 3),
+        "risk_category": risk_category,
+        "requires_intervention": risk_category in {"MEDIUM", "HIGH"},
+    }
 
 
-def _generate_invoice() -> None:
-    """Simulate invoice generation steps."""
-    print("Generating invoice...")
-    for i in range(3):
-        if i == 0:
-            print("Saving invoice to PDF...")
-        elif i == 1:
-            print("Sending invoice to email...")
-        else:
-            print("Invoice generation complete.")
-
-
-def _process_payment(final_price: float, payment_status: str) -> None:
-    """Process payment based on status and final price.
+def aggregate_and_analyze_user_data(
+    user_id: str,
+    dw_client: "DataWarehouseClient",
+    ml_service: "MachineLearningService",
+    include_predictions: bool = True,
+) -> Dict[str, Any]:
+    """Aggregate telemetry, billing, and engagement data for a user.
 
     Args:
-        final_price: Amount to be paid.
-        payment_status: Current payment status string.
-    """
-    if payment_status == 'paid':
-        print("Payment already processed.")
-    else:
-        print("Processing payment...")
-        if final_price > 0:
-            print("Payment successful.")
-        else:
-            print("Nothing to pay.")
-
-
-def process_order(order_data: Dict[str, Any]) -> bool:
-    """Process an order by calculating totals, applying discounts, generating invoice, and handling payment.
-
-    Args:
-        order_data: Dictionary containing order details such as 'name', 'items', and 'payment_status'.
+        user_id: Unique identifier of the user.
+        dw_client: Client used to query the data warehouse.
+        ml_service: Service used for machine‑learning inference.
+        include_predictions: Whether to run the churn prediction model.
 
     Returns:
-        True if the order was processed successfully, False otherwise.
+        A dictionary containing the aggregated profile, status, and any errors.
+
+    Raises:
+        None. All internal errors are captured in the ``errors`` list of the
+        returned profile.
     """
-    print("Starting order processing...")
+    logger.info(f"Initiating data aggregation for user_id: {user_id}")
 
-    if not order_data:
-        print("No order data provided.")
-        return False
+    profile: Dict[str, Any] = {
+        "user_id": user_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": "processing",
+        "engagement_metrics": {},
+        "financial_health": {},
+        "risk_assessment": None,
+        "errors": [],
+    }
 
-    customer_name = order_data.get('name', 'Unknown')
-    items = order_data.get('items', [])
-    if not items:
-        print(f"Customer {customer_name} has no items.")
-        return False
+    try:
+        events = _fetch_events(dw_client, user_id)
+        profile["engagement_metrics"] = _process_engagement(events)
 
-    print("Calculating total price...")
-    total_price = _calculate_total(items)
-    print(f"Total price before tax: {total_price}")
+        billing = _fetch_billing(dw_client, user_id)
+        if billing:
+            profile["financial_health"] = billing
+        else:
+            profile["errors"].append("Billing fetch failed")
 
-    final_price = _apply_tax(total_price)
-    print(f"Final price after tax: {final_price}")
+        if include_predictions and not profile["errors"]:
+            logger.debug(f"Running ML churn prediction for {user_id}")
+            profile["risk_assessment"] = _run_churn_prediction(ml_service, profile)
 
-    _generate_invoice()
+        profile["status"] = "completed" if not profile["errors"] else "partial_success"
+        logger.info(
+            f"Successfully aggregated profile for {user_id}. Status: {profile['status']}"
+        )
+    except Exception as exc:
+        logger.critical(
+            f"Unhandled exception during aggregation for {user_id}: {exc}",
+            exc_info=True,
+        )
+        profile["status"] = "failed"
+        profile["errors"].append("Critical internal error occurred")
 
-    payment_status = order_data.get('payment_status', 'pending')
-    _process_payment(final_price, payment_status)
-
-    print(f"Order processed completely for {customer_name}")
-    return True
+    return profile

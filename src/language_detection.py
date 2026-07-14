@@ -22,6 +22,7 @@ def main():
     python_detected = False
     other_language_detected = False
     detected_other_languages = set()
+    python_files = []          # Track paths of confirmed Python files
     
     # 2. Scan files in the repository (skipping hidden folders, models, and non-code files)
     print("Scanning files for language detection...")
@@ -57,6 +58,7 @@ def main():
                 
                 if str(prediction).lower() == "python":
                     python_detected = True
+                    python_files.append(str(file_path))   # Save the path
                 else:
                     other_language_detected = True
                     detected_other_languages.add(str(prediction))
@@ -69,19 +71,38 @@ def main():
     github_output = os.environ.get("GITHUB_OUTPUT")
     
     # 3. Determine if we should proceed
-    if other_language_detected:
-        print("Non-Python language detected. Stopping system.")
+    langs = ", ".join(detected_other_languages)
+
+    if other_language_detected and python_detected:
+        # Mixed repo — Python files exist alongside other languages.
+        # Filter: proceed with Python-only files, skip everything else.
+        print(f"Mixed repo detected. Non-Python languages found: {langs}")
+        print(f"Proceeding with {len(python_files)} Python file(s) only. Skipping: {langs}")
+        # Write the Python-only file list so the next pipeline step can use it
+        with open("python_files.txt", "w", encoding="utf-8") as pf:
+            for path in python_files:
+                pf.write(path + "\n")
+        if github_output:
+            with open(github_output, "a", encoding="utf-8") as f:
+                f.write("proceed=true\n")
+                f.write("python_only_mode=true\n")
+                f.write(f"skipped_languages={langs}\n")
+
+    elif other_language_detected:
+        # No Python files at all — nothing for this tool to do. Hard stop.
+        print(f"Non-Python language detected ({langs}). No Python files found. Stopping system.")
         if github_output:
             with open(github_output, "a", encoding="utf-8") as f:
                 f.write("proceed=false\n")
-                langs = ", ".join(detected_other_languages)
                 f.write(f"detected_languages={langs}\n")
         sys.exit(1)
+
     elif python_detected:
         print("Only Python files detected. Proceeding...")
         if github_output:
             with open(github_output, "a", encoding="utf-8") as f:
                 f.write("proceed=true\n")
+
     else:
         print("No readable source files found.")
         if github_output:

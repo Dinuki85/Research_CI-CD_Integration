@@ -120,6 +120,20 @@ jobs:
             echo "Running (remote repo): $CMD"
             eval $CMD
             CLI_EXIT=$?
+          elif [ -f python_files.txt ] && [ -s python_files.txt ]; then
+            # Mixed-repo filter mode: language_detection wrote only Python file paths here
+            echo "Python-only filter mode active (mixed-language repo detected)."
+            echo "=== Python files to analyse ==="
+            cat python_files.txt
+            echo "================================"
+            ABS_FILES=""
+            while IFS= read -r f; do
+              ABS_FILES="$ABS_FILES \"$f\""
+            done < python_files.txt
+            CMD="python cli.py --files $ABS_FILES --output \"$SRC_DIR\" --dry-run --json --verbose"
+            echo "Running (python-only filter): $CMD"
+            eval $CMD
+            CLI_EXIT=$?
           elif [ -f /tmp/changed_py_files.txt ] && [ -s /tmp/changed_py_files.txt ]; then
             FILES=$(paste -sd ' ' /tmp/changed_py_files.txt)
             ABS_FILES=""

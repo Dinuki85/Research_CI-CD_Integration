@@ -59,96 +59,132 @@ Return ONLY the refactored Python code. No explanations, no markdown code fences
 ```"""
 
 
-def refactor_function(code: str, model_key: str, api_key: str,
-                      api_url: str = DEFAULT_API_URL,
-                      max_retries: int = 3,
-                      timeout: int = 120) -> dict:
-    """
-    Refactor a Python function using the specified LLM via OpenRouter API.
+import time
+import requests
+from typing import Any, Dict, Optional
 
-    Args:
-        code: The Python function source code to refactor.
-        model_key: One of the MODEL_ORDER keys (e.g. "claude_opus").
-        api_key: OpenRouter API key.
-        api_url: OpenRouter API endpoint.
-        max_retries: Number of retries on failure.
-        timeout: API request timeout in seconds.
+# Constants
+DEFAULT_TEMPERATURE = 0.3
+MAX_TOKENS = 4000
+RATE_LIMIT_STATUS = 429
+SUCCESS_STATUS = 200
+BACKOFF_BASE = 5
+MAX_BACKOFF_WAIT = 60
+RATE_LIMIT_RETRY_DELAY = 2
+GENERAL_RETRY_DELAY = 2
+TIMEOUT_RETRY_DELAY = 3
+CONNECTION_RETRY_DELAY = 5
 
-    Returns:
-        {
-            "success": bool,
-            "refactored_code": str or None,
-            "model_key": str,
-            "model_slug": str,
-            "error": str or None,
-            "usage": dict or None,  # tokens used if available
-        }
-    """
-    model_slug = OPENROUTER_MODEL_MAP.get(model_key, model_key)
 
-    prompt = REFACTOR_PROMPT_TEMPLATE.format(code=code)
-
-    headers = {
+def _build_headers(api_key: str) -> Dict[str, str]:
+    """Create request headers for OpenRouter API."""
+    return {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://github.com/coderefactor-ai",
         "X-Title": "CodeRefactor AI Pipeline",
     }
 
-    payload = {
+
+def _build_payload(model_slug: str, prompt: str) -> Dict[str, Any]:
+    """Create JSON payload for the API request."""
+    return {
         "model": model_slug,
         "messages": [
             {
                 "role": "system",
-                "content": "You are an expert Python code refactoring assistant. Return ONLY clean Python code with no explanations or markdown fences.",
+                "content": (
+                    "You are an expert Python code refactoring assistant. Return ONLY "
+                    "clean Python code with no explanations or markdown fences."
+                ),
             },
-            {
-                "role": "user",
-                "content": prompt,
-            },
+            {"role": "user", "content": prompt},
         ],
-        "temperature": 0.3,  # low temperature for consistent refactoring
-        "max_tokens": 4000,
+        "temperature": DEFAULT_TEMPERATURE,
+        "max_tokens": MAX_TOKENS,
     }
 
-    last_error = None
+
+def _extract_refactored_code(response_json: Dict[str, Any]) -> Optional[str]:
+    """Extract and clean the refactored code from API response."""
+    choices = response_json.get("choices", [])
+    if not choices:
+        return None
+    raw_code = choices[0].get("message", {}).get("content", "").strip()
+    return _clean_code_output(raw_code)
+
+
+def _handle_rate_limit(attempt: int) -> None:
+    """Sleep with exponential backoff when rate limited."""
+    wait = min(2 ** attempt * BACKOFF_BASE, MAX_BACKOFF_WAIT)
+    print(f"    Rate limited. Waiting {wait}s...")
+    time.sleep(wait)
+
+
+def refactor_function(
+    code: str,
+    model_key: str,
+    api_key: str,
+    api_url: str = DEFAULT_API_URL,
+    max_retries: int = 3,
+    timeout: int = 120,
+) -> Dict[str, Any]:
+    """Refactor a Python function using the specified LLM via OpenRouter API.
+
+    Args:
+        code: Source code of the Python function to refactor.
+        model_key: Identifier for the model (e.g., "claude_opus").
+        api_key: OpenRouter authentication token.
+        api_url: Endpoint for the OpenRouter API.
+        max_retries: Maximum number of request attempts on failure.
+        timeout: Seconds to wait for the API response before timing out.
+
+    Returns:
+        A dictionary containing:
+            success (bool): Whether refactoring succeeded.
+            refactored_code (str | None): The cleaned refactored source code.
+            model_key (str): The original model identifier supplied.
+            model_slug (str): The resolved model slug used for the request.
+            error (str | None): Error message if the request failed.
+            usage (dict | None): Token usage information from the API.
+
+    Raises:
+        None. All exceptions are captured and returned in the result dict.
+    """
+    model_slug = OPENROUTER_MODEL_MAP.get(model_key, model_key)
+    prompt = REFACTOR_PROMPT_TEMPLATE.format(code=code)
+
+    headers = _build_headers(api_key)
+    payload = _build_payload(model_slug, prompt)
+
+    last_error: Optional[str] = None
+
     for attempt in range(1, max_retries + 1):
         try:
             response = requests.post(
-                api_url,
-                headers=headers,
-                json=payload,
-                timeout=timeout,
+                api_url, headers=headers, json=payload, timeout=timeout
             )
 
-            if response.status_code == 429:
-                # Rate limited - exponential backoff
-                wait = min(2 ** attempt * 5, 60)
-                print(f"    Rate limited. Waiting {wait}s...")
-                time.sleep(wait)
+            if response.status_code == RATE_LIMIT_STATUS:
+                _handle_rate_limit(attempt)
                 continue
 
-            if response.status_code != 200:
+            if response.status_code != SUCCESS_STATUS:
                 last_error = f"HTTP {response.status_code}: {response.text[:200]}"
                 if attempt < max_retries:
-                    time.sleep(2)
+                    time.sleep(RATE_LIMIT_RETRY_DELAY)
                 continue
 
             data = response.json()
+            refactored = _extract_refactored_code(data)
 
-            # Extract refactored code
-            choices = data.get("choices", [])
-            if not choices:
-                last_error = "No choices in response"
+            if refactored is None:
+                last_error = "No refactored code found in response"
+                if attempt < max_retries:
+                    time.sleep(GENERAL_RETRY_DELAY)
                 continue
 
-            refactored = choices[0].get("message", {}).get("content", "").strip()
-
-            # Clean up markdown fences if the model ignored instructions
-            refactored = _clean_code_output(refactored)
-
-            usage = data.get("usage", None)
-
+            usage = data.get("usage")
             return {
                 "success": True,
                 "refactored_code": refactored,
@@ -161,17 +197,17 @@ def refactor_function(code: str, model_key: str, api_key: str,
         except requests.exceptions.Timeout:
             last_error = f"Request timeout (attempt {attempt}/{max_retries})"
             if attempt < max_retries:
-                time.sleep(3)
+                time.sleep(TIMEOUT_RETRY_DELAY)
 
-        except requests.exceptions.ConnectionError as e:
-            last_error = f"Connection error: {e}"
+        except requests.exceptions.ConnectionError as exc:
+            last_error = f"Connection error: {exc}"
             if attempt < max_retries:
-                time.sleep(5)
+                time.sleep(CONNECTION_RETRY_DELAY)
 
-        except Exception as e:
-            last_error = f"Unexpected error: {e}"
+        except Exception as exc:
+            last_error = f"Unexpected error: {exc}"
             if attempt < max_retries:
-                time.sleep(2)
+                time.sleep(GENERAL_RETRY_DELAY)
 
     return {
         "success": False,

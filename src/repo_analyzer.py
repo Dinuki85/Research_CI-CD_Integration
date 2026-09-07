@@ -86,40 +86,49 @@ class FunctionExtractor(ast.NodeVisitor):
         self.source_lines = source_code.split("\n")
         self.functions: List[Dict] = []
 
-    def _extract_function_info(self, node: ast.FunctionDef, parent_class: Optional[str] = None) -> Dict:
-        """Extract function metadata and source code."""
-        start_line = node.lineno - 1  # 0-indexed
-        end_line = node.end_lineno if hasattr(node, "end_lineno") else start_line + 1
+import ast
+from typing import Any, Dict, List, Optional
 
-        # Extract the exact source code for this function
-        source_lines = self.source_lines[start_line:end_line]
-        source_code = "\n".join(source_lines)
+SELF_PARAM = "self"
+CLS_PARAM = "cls"
 
-        # Get decorators
-        decorators = []
-        for decorator in node.decorator_list:
-            if isinstance(decorator, ast.Name):
-                decorators.append(decorator.id)
-            elif isinstance(decorator, ast.Attribute):
-                decorators.append(f"{ast.dump(decorator)}")
 
-        # Get parameters
-        params = []
-        for arg in node.args.args:
-            params.append(arg.arg)
+class FunctionInfoExtractor:
+    """Helper class to extract metadata from AST function definitions."""
 
-        # Determine if it's a method (first param is self/cls) or nested
-        is_method = bool(params and params[0] in ("self", "cls"))
-        is_nested = parent_class is not None and not is_method  # method in class
+    def __init__(self, source_lines: List[str]) -> None:
+        self.source_lines = source_lines
 
+    def _extract_function_info(
+        self, node: ast.FunctionDef, parent_class: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Extract function metadata and source code.
+
+        Args:
+            node: AST node representing a function definition.
+            parent_class: Name of the enclosing class, if the function is a method.
+
+        Returns:
+            A dictionary containing metadata about the function.
+
+        """
+        start_line = self._zero_based_line(node.lineno)
+        end_line = self._end_line(node, start_line)
+
+        source_code = self._get_source_code(start_line, end_line)
+        decorators = self._extract_decorators(node.decorator_list)
+        params = self._extract_params(node.args.args)
+
+        is_method = self._is_method(params)
+        is_nested = self._is_nested(parent_class, is_method)
         full_name = f"{parent_class}.{node.name}" if parent_class else node.name
 
         return {
             "name": node.name,
             "full_name": full_name,
-            "file_path": None,  # Set by caller
+            "file_path": None,
             "source_code": source_code,
-            "start_line": start_line + 1,  # 1-indexed
+            "start_line": start_line + 1,
             "end_line": end_line,
             "num_lines": end_line - start_line,
             "params": params,
@@ -130,6 +139,42 @@ class FunctionExtractor(ast.NodeVisitor):
             "parent_class": parent_class,
             "docstring": ast.get_docstring(node),
         }
+
+    def _zero_based_line(self, lineno: int) -> int:
+        """Convert a 1‑based line number to 0‑based indexing."""
+        return lineno - 1
+
+    def _end_line(self, node: ast.FunctionDef, start_line: int) -> int:
+        """Determine the ending line number of a function."""
+        return getattr(node, "end_lineno", start_line + 1)
+
+    def _get_source_code(self, start: int, end: int) -> str:
+        """Join source lines for the function into a single string."""
+        return "\n".join(self.source_lines[start:end])
+
+    def _extract_decorators(self, decorator_list: List[ast.expr]) -> List[str]:
+        """Return a list of decorator representations."""
+        result: List[str] = []
+        for deco in decorator_list:
+            if isinstance(deco, ast.Name):
+                result.append(deco.id)
+            elif isinstance(deco, ast.Attribute):
+                result.append(ast.dump(deco))
+        return result
+
+    def _extract_params(self, args: List[ast.arg]) -> List[str]:
+        """Extract parameter names from the function signature."""
+        return [arg.arg for arg in args]
+
+    def _is_method(self, params: List[str]) -> bool:
+        """Check whether the function is a method (first param is self/cls)."""
+        return bool(params) and params[0] in (SELF_PARAM, CLS_PARAM)
+
+    def _is_nested(
+        self, parent_class: Optional[str], is_method: bool
+    ) -> bool:
+        """Determine if the function is nested inside a class but not a method."""
+        return parent_class is not None and not is_method
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
         # Skip __init__ and other dunder methods (they're standard)
@@ -237,42 +282,73 @@ def scan_functions(repo_path: Path) -> List[Dict]:
     return functions
 
 
-def scan_files(file_paths: List[Path], root: Optional[Path] = None) -> List[Dict]:
-    """
-    Scan a specific list of Python files (not a whole repo) and extract functions.
+from pathlib import Path
+import sys
+from typing import Any, Dict, List, Optional
+
+_WARN_PREFIX = "  [WARN]"
+
+
+def _validate_python_file(file_path: Path) -> bool:
+    """Check that a path exists and is a Python file.
 
     Args:
-        file_paths: List of paths to Python files to scan.
-        root: Optional root path for computing relative paths.
+        file_path: Path to validate.
 
     Returns:
-        List of function info dicts.
+        True if the path exists and has a .py suffix, False otherwise.
     """
-    root = Path(root).resolve() if root else None
-    all_functions = []
+    if not file_path.exists():
+        print(f"{_WARN_PREFIX} File does not exist: {file_path}", file=sys.stderr)
+        return False
+    if file_path.suffix != ".py":
+        print(f"{_WARN_PREFIX} Not a Python file: {file_path}", file=sys.stderr)
+        return False
+    return True
 
-    for py_file in file_paths:
-        py_file = Path(py_file).resolve()
-        if not py_file.exists():
-            print(f"  [WARN] File does not exist: {py_file}", file=sys.stderr)
-            continue
-        if not py_file.suffix == ".py":
-            print(f"  [WARN] Not a Python file: {py_file}", file=sys.stderr)
+
+def _attach_relative_path(
+    functions: List[Dict[str, Any]],
+    root: Optional[Path],
+) -> None:
+    """Add a ``rel_path`` entry to each function dict.
+
+    Args:
+        functions: List of function info dictionaries.
+        root: Base path for computing relative paths; if ``None`` the original
+            ``file_path`` is used.
+    """
+    for func in functions:
+        absolute_path = Path(func["file_path"])
+        if root:
+            try:
+                func["rel_path"] = str(absolute_path.relative_to(root))
+                continue
+            except ValueError:
+                pass
+        func["rel_path"] = func["file_path"]
+
+
+def scan_files(file_paths: List[Path], root: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Scan a list of Python files and extract function information.
+
+    Args:
+        file_paths: Paths to Python files to scan.
+        root: Optional directory used to compute relative file paths.
+
+    Returns:
+        A list of dictionaries describing each discovered function.
+    """
+    resolved_root = Path(root).resolve() if root else None
+    all_functions: List[Dict[str, Any]] = []
+
+    for raw_path in file_paths:
+        py_file = Path(raw_path).resolve()
+        if not _validate_python_file(py_file):
             continue
 
         functions = extract_functions_from_file(py_file)
-
-        # Add relative paths
-        for func in functions:
-            abs_path = Path(func["file_path"])
-            if root:
-                try:
-                    func["rel_path"] = str(abs_path.relative_to(root))
-                except ValueError:
-                    func["rel_path"] = func["file_path"]
-            else:
-                func["rel_path"] = func["file_path"]
-
+        _attach_relative_path(functions, resolved_root)
         all_functions.extend(functions)
 
     return all_functions

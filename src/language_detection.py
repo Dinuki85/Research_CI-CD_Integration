@@ -4,110 +4,219 @@ import joblib
 from pathlib import Path
 from scipy.sparse import hstack, csr_matrix
 
-def main():
-    model_path = Path("models/best_language_classifier.joblib")
-    
-    if not model_path.exists():
-        print(f"Model not found at {model_path}")
-        sys.exit(1)
+import os
+import sys
+from pathlib import Path
+from typing import List, Set, Tuple
 
-    # 1. Load the ML model bundle
-    print("Loading language classifier bundle...")
+import joblib
+from scipy.sparse import csr_matrix, hstack
+
+MODEL_PATH: Path = Path("models/best_language_classifier.joblib")
+VALID_EXTENSIONS: Set[str] = {".py", ".java", ".cs", ".js", ".php"}
+GITHUB_OUTPUT_ENV: str = "GITHUB_OUTPUT"
+PYTHON_FILES_OUTPUT: Path = Path("python_files.txt")
+
+
+def load_classifier_bundle(
+    model_path: Path,
+) -> Tuple[object, object, object, List[str]]:
+    """Load the language classifier bundle from a joblib file.
+
+    Args:
+        model_path: Path to the joblib file containing the model and vectorizers.
+
+    Returns:
+        A tuple containing the model, character-level TF‑IDF transformer,
+        word-level TF‑IDF transformer, and the list of class names.
+
+    Raises:
+        FileNotFoundError: If the model file does not exist.
+    """
+    if not model_path.exists():
+        raise FileNotFoundError(f"Model not found at {model_path}")
+
     bundle = joblib.load(model_path)
-    model = bundle['model']
-    tfidf_char = bundle['tfidf_char']
-    tfidf_word = bundle['tfidf_word']
-    class_names = bundle['class_names']
-    
+    return (
+        bundle["model"],
+        bundle["tfidf_char"],
+        bundle["tfidf_word"],
+        bundle["class_names"],
+    )
+
+
+def predict_language(
+    file_path: Path,
+    content: str,
+    model: object,
+    tfidf_char: object,
+    tfidf_word: object,
+    class_names: List[str],
+) -> str:
+    """Predict the programming language of a file's content.
+
+    Args:
+        file_path: Path to the file (used for filename inclusion in the prediction).
+        content: The full text content of the file.
+        model: Trained classifier model.
+        tfidf_char: Character‑level TF‑IDF transformer.
+        tfidf_word: Word‑level TF‑IDF transformer.
+        class_names: Mapping from numeric label to language name.
+
+    Returns:
+        The predicted language name.
+    """
+    line_count = len(content.splitlines())
+    combined = f"{file_path.name.lower()}  {content}"
+
+    x_char = tfidf_char.transform([combined])
+    x_word = tfidf_word.transform([combined])
+    x_lines = csr_matrix([[float(line_count)]])
+
+    if hasattr(model, "n_features_in_") and model.n_features_in_ == x_char.shape[1] + x_word.shape[1]:
+        features = hstack([x_char, x_word])
+    else:
+        features = hstack([x_char, x_word, x_lines])
+
+    label_index = model.predict(features)[0]
+    return class_names[label_index]
+
+
+def is_valid_source_file(file_path: Path) -> bool:
+    """Determine whether a file should be processed for language detection.
+
+    Args:
+        file_path: Path to the file.
+
+    Returns:
+        True if the file is a regular file, not hidden, not under a "models"
+        directory, and has a supported extension.
+    """
+    if not file_path.is_file():
+        return False
+    if any(part.startswith(".") for part in file_path.parts):
+        return False
+    if "models" in file_path.parts:
+        return False
+    return file_path.suffix.lower() in VALID_EXTENSIONS
+
+
+def scan_repository(
+    model: object,
+    tfidf_char: object,
+    tfidf_word: object,
+    class_names: List[str],
+) -> Tuple[bool, bool, List[str], Set[str]]:
+    """Walk the repository and detect languages present.
+
+    Args:
+        model: Trained classifier model.
+        tfidf_char: Character‑level TF‑IDF transformer.
+        tfidf_word: Word‑level TF‑IDF transformer.
+        class_names: Mapping from numeric label to language name.
+
+    Returns:
+        A tuple containing:
+            - python_detected (bool)
+            - other_language_detected (bool)
+            - python_files (list of file paths as strings)
+            - detected_other_languages (set of language names)
+    """
     python_detected = False
     other_language_detected = False
-    detected_other_languages = set()
-    python_files = []          # Track paths of confirmed Python files
-    
-    # 2. Scan files in the repository (skipping hidden folders, models, and non-code files)
-    print("Scanning files for language detection...")
-    
-    valid_extensions = {".py", ".java", ".cs", ".js", ".php"}
-    
+    python_files: List[str] = []
+    detected_other_languages: Set[str] = set()
+
     for file_path in Path(".").rglob("*"):
-        if file_path.is_file() and not any(part.startswith('.') for part in file_path.parts) and 'models' not in file_path.parts:
-            if file_path.suffix.lower() not in valid_extensions:
-                continue
-                
-            try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                
-                # IMPORTANT: Preprocess and predict exactly like the notebook demo
-                lines = len(content.splitlines())
-                # Note: The notebook expected function names. For full files, we just use filename + content.
-                combined = file_path.name.lower() + '  ' + content
-                
-                x_char = tfidf_char.transform([combined])
-                x_word = tfidf_word.transform([combined])
-                x_lines = csr_matrix([[float(lines)]])
-                
-                # Some models (like Naive Bayes) drop the 'lines' feature and only expect 25,000 text features
-                if hasattr(model, "n_features_in_") and model.n_features_in_ == x_char.shape[1] + x_word.shape[1]:
-                    X = hstack([x_char, x_word])
-                else:
-                    X = hstack([x_char, x_word, x_lines])
-                
-                pred_label = model.predict(X)[0]
-                prediction = class_names[pred_label]
-                
-                if str(prediction).lower() == "python":
-                    python_detected = True
-                    python_files.append(str(file_path))   # Save the path
-                else:
-                    other_language_detected = True
-                    detected_other_languages.add(str(prediction))
-                    print(f"Detected other language ({prediction}) in file: {file_path}")
-                    
-            except Exception as e:
-                print(f"Error processing {file_path}: {e}")
-                pass
+        if not is_valid_source_file(file_path):
+            continue
 
-    github_output = os.environ.get("GITHUB_OUTPUT")
-    
-    # 3. Determine if we should proceed
-    langs = ", ".join(detected_other_languages)
+        try:
+            with file_path.open("r", encoding="utf-8") as f:
+                content = f.read()
+            prediction = predict_language(
+                file_path, content, model, tfidf_char, tfidf_word, class_names
+            )
+            if prediction.lower() == "python":
+                python_detected = True
+                python_files.append(str(file_path))
+            else:
+                other_language_detected = True
+                detected_other_languages.add(str(prediction))
+                print(f"Detected other language ({prediction}) in file: {file_path}")
+        except Exception as e:
+            print(f"Error processing {file_path}: {e}")
 
-    if other_language_detected and python_detected:
-        # Mixed repo — Python files exist alongside other languages.
-        # Filter: proceed with Python-only files, skip everything else.
-        print(f"Mixed repo detected. Non-Python languages found: {langs}")
-        print(f"Proceeding with {len(python_files)} Python file(s) only. Skipping: {langs}")
-        # Write the Python-only file list so the next pipeline step can use it
-        with open("python_files.txt", "w", encoding="utf-8") as pf:
-            for path in python_files:
-                pf.write(path + "\n")
-        if github_output:
-            with open(github_output, "a", encoding="utf-8") as f:
-                f.write("proceed=true\n")
-                f.write("python_only_mode=true\n")
-                f.write(f"skipped_languages={langs}\n")
+    return python_detected, other_language_detected, python_files, detected_other_languages
 
-    elif other_language_detected:
-        # No Python files at all — nothing for this tool to do. Hard stop.
-        print(f"Non-Python language detected ({langs}). No Python files found. Stopping system.")
-        if github_output:
-            with open(github_output, "a", encoding="utf-8") as f:
-                f.write("proceed=false\n")
-                f.write(f"detected_languages={langs}\n")
+
+def write_github_output(lines: List[str]) -> None:
+    """Append lines to the GitHub Actions output file if the environment variable is set.
+
+    Args:
+        lines: List of strings to write (each should include a newline if desired).
+    """
+    github_output_path = os.getenv(GITHUB_OUTPUT_ENV)
+    if not github_output_path:
+        return
+    with open(github_output_path, "a", encoding="utf-8") as f:
+        for line in lines:
+            f.write(line)
+
+
+def main() -> None:
+    """Entry point for language detection and GitHub Actions output handling.
+
+    The script loads a pre‑trained classifier, scans the repository for source
+    files, determines whether Python files are present alone or alongside other
+    languages, and writes appropriate flags for downstream workflow steps.
+    """
+    try:
+        model, tfidf_char, tfidf_word, class_names = load_classifier_bundle(MODEL_PATH)
+    except FileNotFoundError as e:
+        print(e)
         sys.exit(1)
 
+    print("Scanning files for language detection...")
+    (
+        python_detected,
+        other_language_detected,
+        python_files,
+        detected_other_languages,
+    ) = scan_repository(model, tfidf_char, tfidf_word, class_names)
+
+    langs_str = ", ".join(detected_other_languages)
+
+    if other_language_detected and python_detected:
+        print(f"Mixed repo detected. Non-Python languages found: {langs_str}")
+        print(f"Proceeding with {len(python_files)} Python file(s) only. Skipping: {langs_str}")
+        PYTHON_FILES_OUTPUT.write_text("\n".join(python_files) + "\n", encoding="utf-8")
+        write_github_output(
+            [
+                "proceed=true\n",
+                "python_only_mode=true\n",
+                f"skipped_languages={langs_str}\n",
+            ]
+        )
+    elif other_language_detected:
+        print(f"Non-Python language detected ({langs_str}). No Python files found. Stopping system.")
+        write_github_output(
+            [
+                "proceed=false\n",
+                f"detected_languages={langs_str}\n",
+            ]
+        )
+        sys.exit(1)
     elif python_detected:
         print("Only Python files detected. Proceeding...")
-        if github_output:
-            with open(github_output, "a", encoding="utf-8") as f:
-                f.write("proceed=true\n")
-
+        write_github_output(["proceed=true\n"])
     else:
         print("No readable source files found.")
-        if github_output:
-            with open(github_output, "a", encoding="utf-8") as f:
-                f.write("proceed=false\n")
+        write_github_output(["proceed=false\n"])
+
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()

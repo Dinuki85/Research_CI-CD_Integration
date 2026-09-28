@@ -237,42 +237,63 @@ def scan_functions(repo_path: Path) -> List[Dict]:
     return functions
 
 
-def scan_files(file_paths: List[Path], root: Optional[Path] = None) -> List[Dict]:
+from pathlib import Path
+import sys
+from typing import List, Dict, Optional, Any
+
+PYTHON_SUFFIX = ".py"
+WARN_PREFIX = "  [WARN]"
+
+
+def _process_file(py_file: Path, root: Optional[Path]) -> List[Dict[str, Any]]:
+    """Extract function information from a single Python file.
+
+    Args:
+        py_file: Absolute path to the Python file.
+        root: Optional root directory for relative path calculation.
+
+    Returns:
+        A list of dictionaries describing functions found in the file.
     """
-    Scan a specific list of Python files (not a whole repo) and extract functions.
+    functions = extract_functions_from_file(py_file)
+
+    for func in functions:
+        abs_path = Path(func["file_path"])
+        if root:
+            try:
+                func["rel_path"] = str(abs_path.relative_to(root))
+            except ValueError:
+                func["rel_path"] = func["file_path"]
+        else:
+            func["rel_path"] = func["file_path"]
+    return functions
+
+
+def scan_files(file_paths: List[Path], root: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Scan a list of Python files and extract function information.
 
     Args:
         file_paths: List of paths to Python files to scan.
         root: Optional root path for computing relative paths.
 
     Returns:
-        List of function info dicts.
+        A list of dictionaries, each representing a discovered function.
+
+    Raises:
+        None.
     """
-    root = Path(root).resolve() if root else None
-    all_functions = []
+    resolved_root = Path(root).resolve() if root else None
+    all_functions: List[Dict[str, Any]] = []
 
-    for py_file in file_paths:
-        py_file = Path(py_file).resolve()
+    for path in file_paths:
+        py_file = Path(path).resolve()
         if not py_file.exists():
-            print(f"  [WARN] File does not exist: {py_file}", file=sys.stderr)
+            print(f"{WARN_PREFIX} File does not exist: {py_file}", file=sys.stderr)
             continue
-        if not py_file.suffix == ".py":
-            print(f"  [WARN] Not a Python file: {py_file}", file=sys.stderr)
+        if py_file.suffix != PYTHON_SUFFIX:
+            print(f"{WARN_PREFIX} Not a Python file: {py_file}", file=sys.stderr)
             continue
 
-        functions = extract_functions_from_file(py_file)
-
-        # Add relative paths
-        for func in functions:
-            abs_path = Path(func["file_path"])
-            if root:
-                try:
-                    func["rel_path"] = str(abs_path.relative_to(root))
-                except ValueError:
-                    func["rel_path"] = func["file_path"]
-            else:
-                func["rel_path"] = func["file_path"]
-
-        all_functions.extend(functions)
+        all_functions.extend(_process_file(py_file, resolved_root))
 
     return all_functions

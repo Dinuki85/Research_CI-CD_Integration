@@ -89,59 +89,158 @@ def char_token_est(s: str) -> int:
 # ── Code smell detectors ─────────────────────────────────────────────────────
 
 
-def detect_code_smells(code_str: str) -> dict:
-    """Detect all 9 code smells. Returns {smell_name: 0/1}."""
-    empty = {s: 0 for s in SMELL_NAMES}
-    if not isinstance(code_str, str) or len(code_str.strip()) < 5:
-        return empty
+import re
+from typing import Dict, List
 
-    code = code_str.replace("\\n", "\n")
-    lines = code.split("\n")
-    nonempty = [l for l in lines if l.strip()]
-    smells = {}
+MAX_METHOD_LINES = 20
+MAX_PARAMS = 4
+MAX_INDENT = 16
+MAX_LINE_LENGTH = 79
+MAGIC_NUMBER_ALLOWLIST = {
+    "0",
+    "1",
+    "2",
+    "3",
+    "10",
+    "100",
+    "-1",
+    "0.0",
+    "1.0",
+}
+ALLOWED_VAR_NAMES = {
+    "i",
+    "j",
+    "k",
+    "n",
+    "x",
+    "y",
+    "z",
+    "f",
+    "e",
+    "v",
+    "_",
+    "s",
+    "c",
+    "p",
+    "q",
+}
 
-    # 1. Long Method
-    smells["long_method"] = int(len(nonempty) > 20)
 
-    # 2. Long Parameter List
-    sig = re.search(r"def\s+\w+\s*\(([^)]*)\)", code)
-    if sig:
-        params = [p.strip() for p in sig.group(1).split(",")
-                  if p.strip() and p.strip() not in ("self", "cls")]
-        smells["long_param_list"] = int(len(params) > 4)
-    else:
-        smells["long_param_list"] = 0
+def _normalize_code(code_str: str) -> str:
+    """Replace escaped newlines with real newlines."""
+    return code_str.replace("\\n", "\n")
 
-    # 3. Deep Nesting
-    max_indent = max((len(l) - len(l.lstrip())) for l in nonempty) if nonempty else 0
-    smells["deep_nesting"] = int(max_indent >= 16)
 
-    # 4. Magic Numbers
-    _allowed_nums = {"0", "1", "2", "3", "10", "100", "-1", "0.0", "1.0"}
-    nums = re.findall(r"(?<!\w)(\d+\.?\d*)(?!\w)", code)
-    magic = [n for n in nums if n not in _allowed_nums]
-    smells["magic_numbers"] = int(len(magic) > 2)
+def _split_lines(code: str) -> List[str]:
+    """Split code into a list of lines."""
+    return code.split("\n")
 
-    # 5. No Docstring
-    smells["no_docstring"] = int('"""' not in code and "'''" not in code)
 
-    # 6. No Type Hints
-    smells["no_type_hints"] = int(not bool(re.search(
-        r"->\s*\w|:\s*(str|int|float|bool|None|list|dict|tuple|Any|Optional|List|Dict|Tuple)", code)))
+def _nonempty_lines(lines: List[str]) -> List[str]:
+    """Return lines that contain non‑whitespace characters."""
+    return [line for line in lines if line.strip()]
 
-    # 7. Long Lines
-    smells["long_lines"] = int(any(len(l) > 79 for l in lines))
 
-    # 8. Commented-out Code
-    commented = [l for l in lines if re.match(
-        r"\s*#\s*(if |for |while |return |self\.|import |def |class |print\()", l)]
-    smells["commented_code"] = int(len(commented) >= 1)
+def _detect_long_method(nonempty: List[str]) -> int:
+    """Return 1 if the method exceeds MAX_METHOD_LINES, else 0."""
+    return int(len(nonempty) > MAX_METHOD_LINES)
 
-    # 9. Poor Naming
-    _allowed_vars = {"i", "j", "k", "n", "x", "y", "z", "f", "e", "v", "_", "s", "c", "p", "q"}
-    poor = [v for v in re.findall(r"\b([a-zA-Z])\s*(?:\+|-|\*|\/)?=(?!=)", code)
-            if v.lower() not in _allowed_vars]
-    smells["poor_naming"] = int(len(poor) > 1)
+
+def _detect_long_param_list(code: str) -> int:
+    """Return 1 if a function definition has more than MAX_PARAMS parameters."""
+    signature = re.search(r"def\s+\w+\s*\(([^)]*)\)", code)
+    if not signature:
+        return 0
+    raw_params = signature.group(1).split(",")
+    params = [
+        p.strip()
+        for p in raw_params
+        if p.strip() and p.strip() not in ("self", "cls")
+    ]
+    return int(len(params) > MAX_PARAMS)
+
+
+def _detect_deep_nesting(nonempty: List[str]) -> int:
+    """Return 1 if any line is indented by MAX_INDENT spaces or more."""
+    if not nonempty:
+        return 0
+    max_indent = max(len(line) - len(line.lstrip()) for line in nonempty)
+    return int(max_indent >= MAX_INDENT)
+
+
+def _detect_magic_numbers(code: str) -> int:
+    """Return 1 if more than two numeric literals are not in the allowlist."""
+    numbers = re.findall(r"(?<!\w)(\d+\.?\d*)(?!\w)", code)
+    magic = [n for n in numbers if n not in MAGIC_NUMBER_ALLOWLIST]
+    return int(len(magic) > 2)
+
+
+def _detect_no_docstring(code: str) -> int:
+    """Return 1 if the file contains no triple‑quoted docstring."""
+    return int('"""' not in code and "'''" not in code)
+
+
+def _detect_no_type_hints(code: str) -> int:
+    """Return 1 if no return type hint or parameter annotation is found."""
+    pattern = (
+        r"->\s*\w|:\s*(str|int|float|bool|None|list|dict|tuple|Any|"
+        r"Optional|List|Dict|Tuple)"
+    )
+    return int(not bool(re.search(pattern, code)))
+
+
+def _detect_long_lines(lines: List[str]) -> int:
+    """Return 1 if any line exceeds MAX_LINE_LENGTH characters."""
+    return int(any(len(line) > MAX_LINE_LENGTH for line in lines))
+
+
+def _detect_commented_code(lines: List[str]) -> int:
+    """Return 1 if there is at least one line that looks like commented‑out code."""
+    pattern = r"\s*#\s*(if |for |while |return |self\.|import |def |class |print\()"
+    commented = [line for line in lines if re.match(pattern, line)]
+    return int(len(commented) >= 1)
+
+
+def _detect_poor_naming(code: str) -> int:
+    """Return 1 if more than one single‑letter variable name is used outside the allowlist."""
+    candidates = re.findall(r"\b([a-zA-Z])\s*(?:\+|-|\*|/)?=(?!=)", code)
+    poor = [v for v in candidates if v.lower() not in ALLOWED_VAR_NAMES]
+    return int(len(poor) > 1)
+
+
+def detect_code_smells(code_str: str) -> Dict[str, int]:
+    """Detect nine common Python code smells.
+
+    Args:
+        code_str: Source code as a string. Escaped newlines (\"\\n\") are allowed.
+
+    Returns:
+        A dictionary mapping each smell name to 0 (absent) or 1 (present).
+
+    Raises:
+        TypeError: If ``code_str`` is not a string.
+    """
+    if not isinstance(code_str, str):
+        raise TypeError("code_str must be a string")
+
+    if len(code_str.strip()) < 5:
+        return {smell: 0 for smell in SMELL_NAMES}
+
+    code = _normalize_code(code_str)
+    lines = _split_lines(code)
+    nonempty = _nonempty_lines(lines)
+
+    smells: Dict[str, int] = {
+        "long_method": _detect_long_method(nonempty),
+        "long_param_list": _detect_long_param_list(code),
+        "deep_nesting": _detect_deep_nesting(nonempty),
+        "magic_numbers": _detect_magic_numbers(code),
+        "no_docstring": _detect_no_docstring(code),
+        "no_type_hints": _detect_no_type_hints(code),
+        "long_lines": _detect_long_lines(lines),
+        "commented_code": _detect_commented_code(lines),
+        "poor_naming": _detect_poor_naming(code),
+    }
 
     return smells
 
@@ -177,115 +276,241 @@ def _safe_joblib_load(path):
         return None
 
 
-def _load_models():
+import csv
+import re
+from pathlib import Path
+from typing import Dict, Any
+
+# Constants for model names
+_QUALITY_REGRESSOR_NAMES = [
+    "ridge_regression",
+    "decision_tree",
+    "random_forest",
+    "gradient_boosting",
+    "xgboost",
+    "svr",
+]
+
+_METRICS_REGRESSOR_NAMES = ["ridge", "random_forest", "gradient_boosting", "xgboost"]
+_METRICS_PREFIXES = [("metrics_time", "_m_time"), ("metrics_tokens", "_m_tokens")]
+
+def _load_models() -> None:
+    """Load all machine‑learning models, scalers, encoders, and price data.
+
+    This function populates several module‑level globals on first call.
+    Subsequent calls are no‑ops.
+
+    Raises:
+        Any exception raised by ``_safe_joblib_load`` or file I/O is
+        propagated to the caller.
+    """
     global _models_loaded, _q_regressors, _q_scaler, _q_le, _q_stats, _q_meta
     global _m_time, _m_tokens, _m_scaler, _m_le, _m_stats, _m_meta, _prices
 
     if _models_loaded:
         return
 
-    # Quality regressors (best-effort)
-    for name in ["ridge_regression", "decision_tree", "random_forest",
-                 "gradient_boosting", "xgboost", "svr"]:
-        fpath = MODELS_DIR / f"quality_{name}.pkl"
-        loaded = _safe_joblib_load(fpath) if fpath.exists() else None
+    _load_quality_regressors()
+    _load_quality_auxiliary()
+    _load_metrics_regressors()
+    _load_metrics_auxiliary()
+    _load_price_data()
+
+    _models_loaded = True
+
+
+def _load_quality_regressors() -> None:
+    """Load quality regression models into ``_q_regressors``."""
+    for name in _QUALITY_REGRESSOR_NAMES:
+        model_path = MODELS_DIR / f"quality_{name}.pkl"
+        if not model_path.exists():
+            continue
+        loaded = _safe_joblib_load(model_path)
         if loaded is not None:
             _q_regressors[name] = loaded
 
-    _q_scaler   = _safe_joblib_load(MODELS_DIR / "quality_scaler.pkl")
-    _q_le       = _safe_joblib_load(MODELS_DIR / "quality_label_encoder.pkl")
-    _q_stats    = _safe_joblib_load(MODELS_DIR / "quality_stats.pkl")
-    _q_meta     = _safe_joblib_load(MODELS_DIR / "quality_meta.pkl")
 
-    # Metrics regressors (best-effort)
-    for name in ["ridge", "random_forest", "gradient_boosting", "xgboost"]:
-        for d, prefix in [(_m_time, "metrics_time"), (_m_tokens, "metrics_tokens")]:
-            fpath = MODELS_DIR / f"{prefix}_{name}.pkl"
-            loaded = _safe_joblib_load(fpath) if fpath.exists() else None
+def _load_quality_auxiliary() -> None:
+    """Load quality scaler, label encoder, stats, and meta information."""
+    global _q_scaler, _q_le, _q_stats, _q_meta
+
+    _q_scaler = _safe_joblib_load(MODELS_DIR / "quality_scaler.pkl")
+    _q_le = _safe_joblib_load(MODELS_DIR / "quality_label_encoder.pkl")
+    _q_stats = _safe_joblib_load(MODELS_DIR / "quality_stats.pkl")
+    _q_meta = _safe_joblib_load(MODELS_DIR / "quality_meta.pkl")
+
+
+def _load_metrics_regressors() -> None:
+    """Load metrics regression models into ``_m_time`` and ``_m_tokens``."""
+    for name in _METRICS_REGRESSOR_NAMES:
+        for dict_name, attr_name in _METRICS_PREFIXES:
+            target_dict = globals()[attr_name]
+            model_path = MODELS_DIR / f"{dict_name}_{name}.pkl"
+            if not model_path.exists():
+                continue
+            loaded = _safe_joblib_load(model_path)
             if loaded is not None:
-                d[name] = loaded
+                target_dict[name] = loaded
+
+
+def _load_metrics_auxiliary() -> None:
+    """Load metrics scaler, label encoder, stats, and meta information."""
+    global _m_scaler, _m_le, _m_stats, _m_meta
 
     _m_scaler = _safe_joblib_load(MODELS_DIR / "metrics_scaler.pkl")
-    _m_le     = _safe_joblib_load(MODELS_DIR / "metrics_label_encoder.pkl")
-    _m_stats  = _safe_joblib_load(MODELS_DIR / "metrics_stats.pkl")
-    _m_meta   = _safe_joblib_load(MODELS_DIR / "metrics_meta.pkl")
+    _m_le = _safe_joblib_load(MODELS_DIR / "metrics_label_encoder.pkl")
+    _m_stats = _safe_joblib_load(MODELS_DIR / "metrics_stats.pkl")
+    _m_meta = _safe_joblib_load(MODELS_DIR / "metrics_meta.pkl")
 
-    # Load prices
-    prices_path = SCRIPT_DIR / "price.csv"
-    if prices_path.exists():
-        with open(str(prices_path), newline="") as fh:
-            reader = csv.DictReader(fh)
-            for row in reader:
-                key = row.get("Model Family") or row.get("Model") or row.get("model")
-                inp = row.get("Input") or row.get("input")
-                if not key or not inp:
-                    continue
-                s = str(inp).strip()
-                nums = re.findall(r"[0-9]+\.?[0-9]*(?:e[+-]?\d+)?", s)
-                try:
-                    vals = [float(x) for x in nums]
-                    if vals:
-                        _prices[key.strip()] = sum(vals) / len(vals)
-                except Exception:
-                    continue
 
-    _models_loaded = True
+def _load_price_data() -> None:
+    """Parse ``price.csv`` and populate the ``_prices`` dictionary."""
+    global _prices
+
+    price_path = SCRIPT_DIR / "price.csv"
+    if not price_path.exists():
+        return
+
+    with open(str(price_path), newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            key = row.get("Model Family") or row.get("Model") or row.get("model")
+            inp = row.get("Input") or row.get("input")
+            if not key or not inp:
+                continue
+
+            numbers = re.findall(r"[0-9]+\.?[0-9]*(?:e[+-]?\d+)?", str(inp).strip())
+            try:
+                values = [float(num) for num in numbers]
+                if values:
+                    _prices[key.strip()] = sum(values) / len(values)
+            except Exception:
+                continue
 
 
 # ── Feature engineering ──────────────────────────────────────────────────────
 
 
-def quality_features(orig_code: str, refact_code: str, func_name: str,
-                     model_enc: int) -> np.ndarray:
-    """Build 50 features (19 structural + 31 smell) for quality prediction."""
-    q_stats = _q_stats
+import numpy as np
 
-    orig_line_count = float(count_lines(orig_code))
-    long_method_flag = int(orig_line_count > 15)
-    refact_line_count = float(count_lines(refact_code))
-    line_delta = orig_line_count - refact_line_count
-    line_delta_ratio = line_delta / (orig_line_count + 1)
-    hfi = has_future_import(refact_code)
-    hds = has_docstring(refact_code)
-    hth = has_type_hints(refact_code)
-    complexity_proxy = count_keywords(refact_code)
-    orig_complexity = count_keywords(orig_code)
-    complexity_delta = orig_complexity - complexity_proxy
-    func_name_len = len(str(func_name))
-    is_private = int(str(func_name).startswith("_") and not str(func_name).startswith("__"))
-    is_dunder = int(str(func_name).startswith("__") and str(func_name).endswith("__"))
-    is_test_func = int(str(func_name).startswith("test"))
-    repo_avg_lines = float(q_stats.get("global_repo_mean", orig_line_count))
-    file_avg_lines = float(q_stats.get("global_file_mean", orig_line_count))
-    global_max = float(q_stats.get("global_max_lines", max(orig_line_count, 1)))
-    norm_line_count = orig_line_count / (global_max + 1)
+# Constants
+LONG_METHOD_THRESHOLD = 15
+DENOMINATOR_OFFSET = 1.0
 
-    structural = [
-        orig_line_count, long_method_flag, refact_line_count, line_delta,
-        line_delta_ratio, hfi, hds, hth,
-        complexity_proxy, orig_complexity, complexity_delta,
-        func_name_len, is_private, is_dunder, is_test_func,
-        repo_avg_lines, file_avg_lines, norm_line_count,
-        model_enc,
+def quality_features(
+    original_code: str,
+    refactored_code: str,
+    function_name: str,
+    model_encoding: int,
+) -> np.ndarray:
+    """Build a 50‑dimensional feature vector for quality prediction.
+
+    Args:
+        original_code: Source code of the original function.
+        refactored_code: Source code after refactoring.
+        function_name: Name of the examined function.
+        model_encoding: Integer encoding of the model used for prediction.
+
+    Returns:
+        A ``np.ndarray`` with shape ``(1, 50)`` containing structural and
+        smell‑related features as ``float`` values.
+
+    Raises:
+        Any exception raised by the helper utilities (e.g. ``count_lines``) is
+        propagated unchanged.
+    """
+    structural = _build_structural_features(
+        original_code,
+        refactored_code,
+        function_name,
+        model_encoding,
+    )
+    smell = _build_smell_features(original_code, refactored_code)
+    return np.array([structural + smell], dtype=float)
+
+
+def _build_structural_features(
+    original_code: str,
+    refactored_code: str,
+    function_name: str,
+    model_encoding: int,
+) -> list[float]:
+    """Calculate structural features for the given function."""
+    original_line_cnt = float(count_lines(original_code))
+    refactored_line_cnt = float(count_lines(refactored_code))
+
+    long_method_flag = int(original_line_cnt > LONG_METHOD_THRESHOLD)
+    line_delta = original_line_cnt - refactored_line_cnt
+    line_delta_ratio = line_delta / (original_line_cnt + DENOMINATOR_OFFSET)
+
+    has_future_imp = has_future_import(refactored_code)
+    has_doc = has_docstring(refactored_code)
+    has_type = has_type_hints(refactored_code)
+
+    refact_complexity = count_keywords(refactored_code)
+    original_complexity = count_keywords(original_code)
+    complexity_delta = original_complexity - refact_complexity
+
+    name_length = len(function_name)
+    is_private = int(function_name.startswith("_") and not function_name.startswith("__"))
+    is_dunder = int(function_name.startswith("__") and function_name.endswith("__"))
+    is_test = int(function_name.startswith("test"))
+
+    repo_avg = float(_q_stats.get("global_repo_mean", original_line_cnt))
+    file_avg = float(_q_stats.get("global_file_mean", original_line_cnt))
+    global_max = float(_q_stats.get("global_max_lines", max(original_line_cnt, DENOMINATOR_OFFSET)))
+    normalized_line_cnt = original_line_cnt / (global_max + DENOMINATOR_OFFSET)
+
+    return [
+        original_line_cnt,
+        long_method_flag,
+        refactored_line_cnt,
+        line_delta,
+        line_delta_ratio,
+        has_future_imp,
+        has_doc,
+        has_type,
+        refact_complexity,
+        original_complexity,
+        complexity_delta,
+        name_length,
+        is_private,
+        is_dunder,
+        is_test,
+        repo_avg,
+        file_avg,
+        normalized_line_cnt,
+        model_encoding,
     ]
 
-    # Smell features (31)
-    orig_smells = detect_code_smells(orig_code)
-    refact_smells = detect_code_smells(refact_code)
 
-    orig_smell_count = sum(orig_smells.values())
-    refact_smell_count = sum(refact_smells.values())
-    smell_reduction = max(0, orig_smell_count - refact_smell_count)
-    smell_reduction_ratio = smell_reduction / (orig_smell_count + 1)
+def _build_smell_features(
+    original_code: str,
+    refactored_code: str,
+) -> list[float]:
+    """Calculate smell‑related features for the given pair of code snippets."""
+    original_smells = detect_code_smells(original_code)
+    refactored_smells = detect_code_smells(refactored_code)
 
-    smell_agg = [orig_smell_count, refact_smell_count, smell_reduction, smell_reduction_ratio]
-    orig_per = [orig_smells[s] for s in SMELL_NAMES]
-    refact_per = [refact_smells[s] for s in SMELL_NAMES]
-    fixed_per = [max(0, orig_smells[s] - refact_smells[s]) for s in SMELL_NAMES]
+    original_total = sum(original_smells.values())
+    refactored_total = sum(refactored_smells.values())
+    reduction = max(0, original_total - refactored_total)
+    reduction_ratio = reduction / (original_total + DENOMINATOR_OFFSET)
 
-    smell_features = smell_agg + orig_per + refact_per + fixed_per
+    aggregation = [
+        original_total,
+        refactored_total,
+        reduction,
+        reduction_ratio,
+    ]
 
-    return np.array([structural + smell_features], dtype=float)
+    original_per_smell = [original_smells[name] for name in SMELL_NAMES]
+    refactored_per_smell = [refactored_smells[name] for name in SMELL_NAMES]
+    fixed_per_smell = [
+        max(0, original_smells[name] - refactored_smells[name]) for name in SMELL_NAMES
+    ]
+
+    return aggregation + original_per_smell + refactored_per_smell + fixed_per_smell
 
 
 def metrics_features(orig_code: str, refact_code: str, func_name: str,
@@ -331,126 +556,201 @@ def metrics_features(orig_code: str, refact_code: str, func_name: str,
 # ── Prediction ───────────────────────────────────────────────────────────────
 
 
-def predict_all_llms(orig_code: str, func_name: str = "unknown_function") -> dict:
-    """
-    For each of the 5 LLMs, predict quality score, generation time, tokens,
-    and cost. Returns a dict keyed by model name.
+from typing import Any, Dict, List
+import numpy as np
 
-    Uses original code as proxy for refactored code (since we haven't
-    actually refactored yet — delta features will be zero).
-    Falls back to sensible defaults if ML models fail to load.
+DEFAULT_QUALITY_SCORE = 5.0
+DEFAULT_PRED_TIME_MS = 2000
+DEFAULT_PRED_TOKENS = 500
+
+
+def _encode_label(
+    label_encoder: Any, llm: str, fallback_index: int
+) -> int:
+    """Encode LLM name using a label encoder or fallback index."""
+    try:
+        if label_encoder is not None:
+            return int(label_encoder.transform([llm])[0])
+    except Exception:
+        pass
+    return fallback_index
+
+
+def _predict_quality(
+    orig_code: str,
+    refact_proxy: str,
+    func_name: str,
+    q_enc: int,
+    best_q_safe: str,
+    best_q_name: str,
+    q_regressors: Dict[str, Any],
+    q_scaler: Any,
+    q_scaled_models: List[str],
+) -> float:
+    """Predict quality score (0‑10) for a single LLM."""
+    if not q_regressors or best_q_safe not in q_regressors:
+        return DEFAULT_QUALITY_SCORE
+
+    features = quality_features(orig_code, refact_proxy, func_name, q_enc)
+
+    reg = q_regressors[best_q_safe]
+    try:
+        if q_scaler is not None and best_q_name in q_scaled_models:
+            inp = q_scaler.transform(features)
+        else:
+            inp = features
+        pred = reg.predict(inp)[0]
+        return float(np.clip(pred, 0.0, 10.0))
+    except Exception:
+        return DEFAULT_QUALITY_SCORE
+
+
+def _predict_metrics(
+    orig_code: str,
+    refact_proxy: str,
+    func_name: str,
+    m_enc: int,
+    time_reg: Any,
+    tokens_reg: Any,
+    m_scaler: Any,
+) -> tuple[int, int]:
+    """Predict generation time (ms) and token count for a single LLM."""
+    if time_reg is None or tokens_reg is None:
+        return DEFAULT_PRED_TIME_MS, DEFAULT_PRED_TOKENS
+
+    features = metrics_features(orig_code, refact_proxy, func_name, m_enc)
+
+    try:
+        if m_scaler is not None:
+            features = m_scaler.transform(features)
+        time_ms = int(np.expm1(time_reg.predict(features)[0]))
+        tokens = int(np.expm1(tokens_reg.predict(features)[0]))
+        return time_ms, tokens
+    except Exception:
+        return DEFAULT_PRED_TIME_MS, DEFAULT_PRED_TOKENS
+
+
+def _price_per_token(llm: str, prices: Dict[str, Any]) -> float:
+    """Resolve price per token for a given LLM."""
+    try:
+        price = float(prices.get(llm, 0.0))
+        if price != 0.0:
+            return price
+        for alt, val in prices.items():
+            alt_key = alt.lower().replace(" ", "_")
+            if alt_key == llm or llm in alt_key or alt_key in llm:
+                return float(val)
+    except Exception:
+        pass
+    return 0.0
+
+
+def _normalize_array(arr: np.ndarray) -> np.ndarray:
+    """Scale array to [0, 1]; fallback to 0.5 when constant."""
+    rng = arr.max() - arr.min()
+    if rng > 0:
+        return (arr - arr.min()) / rng
+    return np.full_like(arr, 0.5, dtype=float)
+
+
+def predict_all_llms(
+    orig_code: str, func_name: str = "unknown_function"
+) -> Dict[str, Dict[str, Any]]:
+    """Predict quality, latency, token usage and cost for all supported LLMs.
+
+    Args:
+        orig_code: Original source code to be evaluated.
+        func_name: Name of the function containing the code.
+
+    Returns:
+        Mapping from LLM name to a dictionary of metrics, including a
+        composite score (0‑100).
+
     """
     _load_models()
     refact_proxy = orig_code
 
-    # Defaults when models are unavailable
-    models_available = bool(_q_regressors) and _q_scaler is not None and _q_le is not None
-    metrics_available = bool(_m_time) and _m_scaler is not None and _m_le is not None
+    models_ready = bool(_q_regressors) and _q_scaler is not None and _q_le is not None
+    metrics_ready = bool(_m_time) and _m_scaler is not None and _m_le is not None
 
-    if models_available and _q_meta is not None:
-        best_q_name = _q_meta["best_model"]
-        best_q_safe = best_q_name.lower().replace(" ", "_")
-        q_scaled_models = _q_stats.get("scaled_models", ["Ridge Regression", "SVR"]) if _q_stats is not None else []
-    else:
-        best_q_name = ""
-        best_q_safe = ""
-        q_scaled_models = []
+    best_q_name = _q_meta["best_model"] if models_ready and _q_meta else ""
+    best_q_safe = best_q_name.lower().replace(" ", "_")
+    q_scaled_models = (
+        _q_stats.get("scaled_models", ["Ridge Regression", "SVR"])
+        if _q_stats is not None
+        else []
+    )
 
-    if metrics_available and _m_meta is not None:
-        best_time_name = _m_meta.get("best_time_model", "gradient_boosting").lower().replace(" ", "_")
-        best_tokens_name = _m_meta.get("best_tokens_model", "gradient_boosting").lower().replace(" ", "_")
+    if metrics_ready and _m_meta is not None:
+        best_time_name = _m_meta.get("best_time_model", "gradient_boosting").lower().replace(
+            " ", "_"
+        )
+        best_tokens_name = _m_meta.get("best_tokens_model", "gradient_boosting").lower().replace(
+            " ", "_"
+        )
     else:
         best_time_name = ""
         best_tokens_name = ""
 
-    results = {}
+    results: Dict[str, Dict[str, Any]] = {}
     for llm in MODEL_ORDER:
-        try:
-            q_enc = int(_q_le.transform([llm])[0]) if _q_le is not None else MODEL_ORDER.index(llm)
-        except Exception:
-            q_enc = MODEL_ORDER.index(llm)
-        try:
-            m_enc = int(_m_le.transform([llm])[0]) if _m_le is not None else MODEL_ORDER.index(llm)
-        except Exception:
-            m_enc = MODEL_ORDER.index(llm)
+        q_enc = _encode_label(_q_le, llm, MODEL_ORDER.index(llm))
+        m_enc = _encode_label(_m_le, llm, MODEL_ORDER.index(llm))
 
-        # Quality score (0-10)
-        if models_available and best_q_safe in _q_regressors:
-            qX = quality_features(orig_code, refact_proxy, func_name, q_enc)
-            reg = _q_regressors[best_q_safe]
-            try:
-                if _q_scaler is not None and best_q_name in q_scaled_models:
-                    qX_input = _q_scaler.transform(qX)
-                else:
-                    qX_input = qX
-                quality_score = float(np.clip(reg.predict(qX_input)[0], 0.0, 10.0))
-            except Exception:
-                quality_score = 5.0
-        else:
-            quality_score = 5.0  # fallback default
+        quality_score = _predict_quality(
+            orig_code,
+            refact_proxy,
+            func_name,
+            q_enc,
+            best_q_safe,
+            best_q_name,
+            _q_regressors,
+            _q_scaler,
+            q_scaled_models,
+        ) if models_ready else DEFAULT_QUALITY_SCORE
 
-        # Metrics (time + tokens)
-        if metrics_available:
-            mX = metrics_features(orig_code, refact_proxy, func_name, m_enc)
-            time_reg = _m_time.get(best_time_name)
-            tokens_reg = _m_tokens.get(best_tokens_name)
-            if time_reg is not None and tokens_reg is not None:
-                try:
-                    pred_time_ms = int(np.expm1(time_reg.predict(mX)[0]))
-                    pred_tokens = int(np.expm1(tokens_reg.predict(mX)[0]))
-                except Exception:
-                    pred_time_ms = 2000
-                    pred_tokens = 500
-            else:
-                pred_time_ms = 2000
-                pred_tokens = 500
-        else:
-            pred_time_ms = 2000
-            pred_tokens = 500
+        time_reg = _m_time.get(best_time_name) if metrics_ready else None
+        tokens_reg = _m_tokens.get(best_tokens_name) if metrics_ready else None
+        pred_time_ms, pred_tokens = (
+            _predict_metrics(
+                orig_code,
+                refact_proxy,
+                func_name,
+                m_enc,
+                time_reg,
+                tokens_reg,
+                _m_scaler,
+            )
+            if metrics_ready
+            else (DEFAULT_PRED_TIME_MS, DEFAULT_PRED_TOKENS)
+        )
 
-        # Cost
-        price_per_token = 0.0
-        try:
-            price_per_token = float(_prices.get(llm, 0.0))
-            if price_per_token == 0.0:
-                for k, v in _prices.items():
-                    kn = k.lower().replace(" ", "_")
-                    if kn == llm or llm in kn or kn in llm:
-                        price_per_token = float(v)
-                        break
-        except Exception:
-            price_per_token = 0.0
-
+        price = _price_per_token(llm, _prices)
         results[llm] = {
             "quality_score": quality_score,
             "pred_time_ms": pred_time_ms,
             "pred_tokens": pred_tokens,
-            "pred_cost": float(pred_tokens) * price_per_token,
-            "price_per_token": price_per_token,
+            "pred_cost": float(pred_tokens) * price,
+            "price_per_token": price,
             "openrouter_slug": OPENROUTER_MODEL_MAP.get(llm, llm),
             "display_name": MODEL_DISPLAY.get(llm, llm),
         }
 
-    # Compute composite score (0-100)
-    llms = list(results.keys())
-    scores = np.array([results[l]["quality_score"] for l in llms], dtype=float)
-    times = np.array([results[l]["pred_time_ms"] for l in llms], dtype=float)
-    tokens = np.array([results[l]["pred_tokens"] for l in llms], dtype=float)
-    costs = np.array([results[l].get("pred_cost", 0.0) for l in llms], dtype=float)
-
-    def norm(arr):
-        r = arr.max() - arr.min()
-        return (arr - arr.min()) / r if r > 0 else np.full_like(arr, 0.5)
+    llm_names = list(results.keys())
+    scores = np.array([results[n]["quality_score"] for n in llm_names], dtype=float)
+    times = np.array([results[n]["pred_time_ms"] for n in llm_names], dtype=float)
+    tokens = np.array([results[n]["pred_tokens"] for n in llm_names], dtype=float)
+    costs = np.array([results[n].get("pred_cost", 0.0) for n in llm_names], dtype=float)
 
     composite = (
-        0.50 * norm(scores)
-        + 0.20 * (1.0 - norm(costs))
-        + 0.20 * (1.0 - norm(times))
-        + 0.10 * (1.0 - norm(tokens))
+        0.50 * _normalize_array(scores)
+        + 0.20 * (1.0 - _normalize_array(costs))
+        + 0.20 * (1.0 - _normalize_array(times))
+        + 0.10 * (1.0 - _normalize_array(tokens))
     ) * 100.0
 
-    for i, llm in enumerate(llms):
-        results[llm]["composite"] = float(composite[i])
+    for i, name in enumerate(llm_names):
+        results[name]["composite"] = float(composite[i])
 
     return results
 
